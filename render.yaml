@@ -15,10 +15,6 @@ services:
         generateValue: true
       - key: CORS_ORIGINS
         value: https://eduagi-frontend.onrender.com
-      - key: UPLOAD_DIR
-        value: ./upload
-      - key: MAX_FILE_SIZE
-        value: 100MB
 
   # 前端静态网站
   - type: web
