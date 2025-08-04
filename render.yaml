@@ -1,0 +1,32 @@
+services:
+  # 后端API服务
+  - type: web
+    name: eduagi-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        value: sqlite:///./teaching.db
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://eduagi-frontend.onrender.com
+      - key: UPLOAD_DIR
+        value: ./upload
+      - key: MAX_FILE_SIZE
+        value: 100MB
+
+  # 前端静态网站
+  - type: web
+    name: eduagi-frontend
+    env: static
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://eduagi-backend.onrender.com/api 
