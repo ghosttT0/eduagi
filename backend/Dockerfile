@@ -14,10 +14,10 @@ RUN pip install --no-cache-dir -r requirements-ultra-minimal.txt
 RUN pip install --no-cache-dir uvicorn
 RUN which uvicorn
 
-COPY main-ultra-simple.py .
+COPY main-ultra-simple.py main.py
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "uvicorn main-ultra-simple:app --host 0.0.0.0 --port $PORT"] 
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port $PORT"] 
  
  
