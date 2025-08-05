@@ -4,6 +4,9 @@ import LoginPage from './pages/LoginPage'
 import AdminLayout from './layouts/AdminLayout'
 import TeacherLayout from './layouts/TeacherLayout'
 import StudentLayout from './layouts/StudentLayout'
+import TeacherDashboardPage from './pages/teacher/DashboardPage'
+import StudentDashboardPage from './pages/student/DashboardPage'
+import AdminDashboardPage from './pages/admin/DashboardPage'
 import './App.css'
 import './styles/global.css'
 
@@ -15,25 +18,44 @@ function App() {
     return <LoginPage />
   }
 
-  // 根据用户角色渲染不同的布局
-  const renderLayout = () => {
-    switch (user?.role) {
-      case '管理员':
-        return <AdminLayout />
-      case '教师':
-        return <TeacherLayout />
-      case '学生':
-        return <StudentLayout />
-      default:
-        return <Navigate to="/login" replace />
-    }
-  }
-
   return (
     <div className="App">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/*" element={renderLayout()} />
+        
+        {/* 教师路由 */}
+        <Route path="/teacher" element={<TeacherLayout />}>
+          <Route index element={<Navigate to="/teacher/dashboard" replace />} />
+          <Route path="dashboard" element={<TeacherDashboardPage />} />
+          <Route path="resources" element={<div>资源管理页面</div>} />
+          <Route path="videos" element={<div>视频分析页面</div>} />
+          <Route path="exams" element={<div>考试管理页面</div>} />
+          <Route path="notes" element={<div>笔记管理页面</div>} />
+          <Route path="settings" element={<div>个人设置页面</div>} />
+        </Route>
+
+        {/* 学生路由 */}
+        <Route path="/student" element={<StudentLayout />}>
+          <Route index element={<Navigate to="/student/dashboard" replace />} />
+          <Route path="dashboard" element={<StudentDashboardPage />} />
+          <Route path="learning" element={<div>学习页面</div>} />
+          <Route path="notes" element={<div>笔记页面</div>} />
+          <Route path="exams" element={<div>考试页面</div>} />
+          <Route path="settings" element={<div>个人设置页面</div>} />
+        </Route>
+
+        {/* 管理员路由 */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="users" element={<div>用户管理页面</div>} />
+          <Route path="classes" element={<div>班级管理页面</div>} />
+          <Route path="settings" element={<div>系统设置页面</div>} />
+        </Route>
+
+        {/* 默认重定向 */}
+        <Route path="/" element={<Navigate to="/teacher/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/teacher/dashboard" replace />} />
       </Routes>
     </div>
   )

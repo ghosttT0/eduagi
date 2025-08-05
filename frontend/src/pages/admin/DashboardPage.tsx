@@ -1,84 +1,31 @@
-import React, { useEffect, useState } from 'react'
-import { Row, Col, Card, Statistic, Table, Typography, Spin } from 'antd'
-import {
-  UserOutlined,
-  TeamOutlined,
-  FileTextOutlined,
-  VideoCameraOutlined,
-} from '@ant-design/icons'
-import { analyticsAPI } from '../../services/api'
+import React from 'react'
+import { Card, Row, Col, Statistic, List, Typography, Tag } from 'antd'
+import { UserOutlined, TeamOutlined, FileTextOutlined, SettingOutlined } from '@ant-design/icons'
 
-const { Title } = Typography
+const { Title, Text } = Typography
 
-interface DashboardData {
-  total_users: number
-  total_resources: number
-  total_exams: number
-  recent_activities: any[]
-}
-
-const DashboardPage: React.FC = () => {
-  const [loading, setLoading] = useState(true)
-  const [dashboardData, setDashboardData] = useState<DashboardData>({
-    total_users: 0,
-    total_resources: 0,
-    total_exams: 0,
-    recent_activities: [],
-  })
-
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
-
-  const fetchDashboardData = async () => {
-    try {
-      const response = await analyticsAPI.getDashboardData()
-      setDashboardData(response.data)
-    } catch (error) {
-      console.error('获取仪表板数据失败:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const activityColumns = [
-    {
-      title: '时间',
-      dataIndex: 'time',
-      key: 'time',
-      width: 150,
-    },
-    {
-      title: '用户',
-      dataIndex: 'user',
-      key: 'user',
-      width: 100,
-    },
-    {
-      title: '活动',
-      dataIndex: 'activity',
-      key: 'activity',
-    },
-  ]
-
-  if (loading) {
-    return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
-        <Spin size="large" />
-      </div>
-    )
+const AdminDashboardPage: React.FC = () => {
+  const data = {
+    total_users: 156,
+    total_classes: 8,
+    total_resources: 245,
+    recent_activities: [
+      { title: '新增用户：张三', time: '2024-01-15', type: 'user' },
+      { title: '创建班级：计算机科学2班', time: '2024-01-14', type: 'class' },
+      { title: '上传资源：Python教程', time: '2024-01-13', type: 'resource' },
+    ]
   }
 
   return (
-    <div>
-      <Title level={2}>系统仪表板</Title>
-      
+    <div style={{ padding: '24px' }}>
+      <Title level={2}>管理员仪表板</Title>
+
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
               title="总用户数"
-              value={dashboardData.total_users}
+              value={data.total_users}
               prefix={<UserOutlined />}
               valueStyle={{ color: '#3f8600' }}
             />
@@ -87,9 +34,9 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="总资源数"
-              value={dashboardData.total_resources}
-              prefix={<FileTextOutlined />}
+              title="班级数量"
+              value={data.total_classes}
+              prefix={<TeamOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
           </Card>
@@ -97,9 +44,9 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="总考试数"
-              value={dashboardData.total_exams}
-              prefix={<TeamOutlined />}
+              title="资源总数"
+              value={data.total_resources}
+              prefix={<FileTextOutlined />}
               valueStyle={{ color: '#722ed1' }}
             />
           </Card>
@@ -107,10 +54,10 @@ const DashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="视频分析"
-              value={0}
-              prefix={<VideoCameraOutlined />}
-              valueStyle={{ color: '#eb2f96' }}
+              title="系统状态"
+              value="正常"
+              prefix={<SettingOutlined />}
+              valueStyle={{ color: '#52c41a' }}
             />
           </Card>
         </Col>
@@ -119,11 +66,23 @@ const DashboardPage: React.FC = () => {
       <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>
         <Col span={24}>
           <Card title="最近活动" size="small">
-            <Table
-              columns={activityColumns}
-              dataSource={dashboardData.recent_activities}
-              pagination={false}
-              size="small"
+            <List
+              dataSource={data.recent_activities}
+              renderItem={(item: any) => (
+                <List.Item>
+                  <List.Item.Meta
+                    title={item.title}
+                    description={
+                      <div>
+                        <Text type="secondary">{item.time}</Text>
+                        <Tag color={item.type === 'user' ? 'blue' : item.type === 'class' ? 'green' : 'orange'} style={{ marginLeft: 8 }}>
+                          {item.type === 'user' ? '用户' : item.type === 'class' ? '班级' : '资源'}
+                        </Tag>
+                      </div>
+                    }
+                  />
+                </List.Item>
+              )}
               locale={{
                 emptyText: '暂无活动记录',
               }}
@@ -135,4 +94,4 @@ const DashboardPage: React.FC = () => {
   )
 }
 
-export default DashboardPage 
+export default AdminDashboardPage 

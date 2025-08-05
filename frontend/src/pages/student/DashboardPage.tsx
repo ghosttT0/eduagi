@@ -1,46 +1,24 @@
-import React, { useEffect, useState } from 'react'
-import { Card, Row, Col, Statistic, List, Typography, Tag, Progress } from 'antd'
-import { BookOutlined, VideoCameraOutlined, FileTextOutlined, TrophyOutlined } from '@ant-design/icons'
-import { analyticsAPI } from '../../services/api'
+import React from 'react'
+import { Card, Row, Col, Statistic, List, Typography, Tag } from 'antd'
+import { BookOutlined, FileTextOutlined, TeamOutlined, TrophyOutlined } from '@ant-design/icons'
 
 const { Title, Text } = Typography
 
-interface StudentDashboard {
-  total_courses: number
-  total_resources: number
-  total_exams: number
-  recent_activities: any[]
-  learning_progress: number
-}
-
 const StudentDashboardPage: React.FC = () => {
-  const [data, setData] = useState<StudentDashboard>({
-    total_courses: 0,
-    total_resources: 0,
-    total_exams: 0,
-    recent_activities: [],
-    learning_progress: 0,
-  })
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
-
-  const fetchDashboardData = async () => {
-    try {
-      const response = await analyticsAPI.getStudentDashboard()
-      setData(response.data)
-    } catch (error) {
-      console.error('获取仪表板数据失败:', error)
-    } finally {
-      setLoading(false)
-    }
+  const data = {
+    total_courses: 5,
+    total_assignments: 12,
+    total_notes: 8,
+    recent_activities: [
+      { title: '完成了Python基础课程', time: '2024-01-15', type: 'course' },
+      { title: '提交了作业：数据结构', time: '2024-01-14', type: 'assignment' },
+      { title: '创建了新的学习笔记', time: '2024-01-13', type: 'note' },
+    ]
   }
 
   return (
-    <div>
-      <Title level={2}>学习中心</Title>
+    <div style={{ padding: '24px' }}>
+      <Title level={2}>学生仪表板</Title>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
@@ -56,8 +34,8 @@ const StudentDashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="学习资源"
-              value={data.total_resources}
+              title="待完成作业"
+              value={data.total_assignments}
               prefix={<FileTextOutlined />}
               valueStyle={{ color: '#1890ff' }}
             />
@@ -66,9 +44,9 @@ const StudentDashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="考试数量"
-              value={data.total_exams}
-              prefix={<TrophyOutlined />}
+              title="学习笔记"
+              value={data.total_notes}
+              prefix={<TeamOutlined />}
               valueStyle={{ color: '#722ed1' }}
             />
           </Card>
@@ -76,9 +54,9 @@ const StudentDashboardPage: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic
-              title="视频学习"
-              value={0}
-              prefix={<VideoCameraOutlined />}
+              title="学习成就"
+              value={3}
+              prefix={<TrophyOutlined />}
               valueStyle={{ color: '#eb2f96' }}
             />
           </Card>
@@ -86,19 +64,7 @@ const StudentDashboardPage: React.FC = () => {
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>
-        <Col span={12}>
-          <Card title="学习进度" size="small">
-            <Progress
-              type="circle"
-              percent={data.learning_progress}
-              format={(percent) => `${percent}%`}
-            />
-            <div style={{ marginTop: 16 }}>
-              <Text>当前学习进度：{data.learning_progress}%</Text>
-            </div>
-          </Card>
-        </Col>
-        <Col span={12}>
+        <Col span={24}>
           <Card title="最近活动" size="small">
             <List
               dataSource={data.recent_activities}
@@ -109,8 +75,8 @@ const StudentDashboardPage: React.FC = () => {
                     description={
                       <div>
                         <Text type="secondary">{item.time}</Text>
-                        <Tag color={item.type === 'course' ? 'blue' : 'green'} style={{ marginLeft: 8 }}>
-                          {item.type === 'course' ? '课程' : '活动'}
+                        <Tag color={item.type === 'course' ? 'blue' : item.type === 'assignment' ? 'green' : 'orange'} style={{ marginLeft: 8 }}>
+                          {item.type === 'course' ? '课程' : item.type === 'assignment' ? '作业' : '笔记'}
                         </Tag>
                       </div>
                     }
