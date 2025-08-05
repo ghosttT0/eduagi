@@ -207,3 +207,95 @@
   .responsive-gap-lg { gap: 16px; }
   .responsive-gap-xl { gap: 24px; }
 } 
+
+/* 全局CSS重置和布局修复 */
+
+/* 重置所有元素的盒模型 */
+* {
+  box-sizing: border-box;
+}
+
+/* 确保根元素和body占满全屏 */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* 强制所有布局容器使用Flexbox */
+.teacher-layout,
+.student-layout,
+.admin-layout {
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* 确保侧边栏不会被压缩 */
+.teacher-layout .ant-layout-sider,
+.student-layout .ant-layout-sider,
+.admin-layout .ant-layout-sider {
+  flex-shrink: 0 !important;
+  position: relative !important;
+  float: none !important;
+}
+
+/* 确保主内容区域自动扩展 */
+.teacher-layout .ant-layout,
+.student-layout .ant-layout,
+.admin-layout .ant-layout {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  width: auto !important;
+  overflow: hidden !important;
+}
+
+/* 确保内容区域正确显示 */
+.teacher-content,
+.student-content,
+.admin-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+  width: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* 修复可能的Ant Design样式冲突 */
+.ant-layout {
+  background: transparent !important;
+}
+
+.ant-layout-sider {
+  background: #001529 !important;
+}
+
+/* 确保内容区域内的元素不会溢出 */
+.teacher-content > *,
+.student-content > *,
+.admin-content > * {
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* 响应式修复 */
+@media (max-width: 768px) {
+  .teacher-layout,
+  .student-layout,
+  .admin-layout {
+    flex-direction: column !important;
+  }
+  
+  .teacher-layout .ant-layout-sider,
+  .student-layout .ant-layout-sider,
+  .admin-layout .ant-layout-sider {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+} 

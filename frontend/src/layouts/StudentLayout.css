@@ -1,14 +1,18 @@
+/* 强制应用Flexbox布局 */
 .student-layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: row;
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
 }
 
+/* 侧边栏固定宽度 */
 .student-layout .ant-layout-sider {
-  flex-shrink: 0;
+  flex-shrink: 0 !important;
   width: 220px !important;
   min-width: 220px !important;
   max-width: 220px !important;
+  position: relative !important;
 }
 
 .student-layout .ant-layout-sider-collapsed {
@@ -17,33 +21,46 @@
   max-width: 80px !important;
 }
 
+/* 主内容区域容器 */
 .student-layout .ant-layout {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  width: auto !important;
 }
 
+/* 头部固定高度 */
 .student-header {
-  background: white;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-  height: 64px;
+  background: white !important;
+  padding: 0 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  flex-shrink: 0 !important;
+  height: 64px !important;
+  width: 100% !important;
 }
 
+/* 内容区域自动扩展 */
 .student-content {
-  flex: 1;
-  margin: 24px;
-  padding: 24px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  min-height: 0;
+  flex: 1 !important;
+  margin: 24px !important;
+  padding: 24px !important;
+  background: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+/* 确保内容区域内的元素也能正确显示 */
+.student-content > * {
+  width: 100% !important;
+  min-width: 0 !important;
 }
 
 .logo {
@@ -84,7 +101,7 @@
   color: #1890ff;
 }
 
-/* 确保内容区域在小屏幕上也能正常显示 */
+/* 响应式设计 */
 @media (max-width: 768px) {
   .student-layout .ant-layout-sider {
     width: 80px !important;
@@ -93,7 +110,19 @@
   }
   
   .student-content {
-    margin: 12px;
-    padding: 16px;
+    margin: 12px !important;
+    padding: 16px !important;
   }
+}
+
+/* 覆盖Ant Design可能的冲突样式 */
+.student-layout .ant-layout-sider,
+.student-layout .ant-layout {
+  position: relative !important;
+  float: none !important;
+}
+
+/* 确保没有其他样式干扰 */
+.student-layout * {
+  box-sizing: border-box;
 } 
