@@ -26,6 +26,6 @@ RUN pip install --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8080
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--root-path", "/api"] 
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"] 
  
  
