@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  /* 样式与之前版本保持一致 */
+  .links line { stroke: #999; stroke-opacity: 0.6; }
+  .nodes circle { stroke: #fff; stroke-width: 1.5px; }
+  .node-label { font-size: 14px; font-family: sans-serif; fill: #f0f0f0; paint-order: stroke; stroke: #1a1a2e; stroke-width: 3px; }
+</style>
+<body>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<svg id="svg-{{ unique_id }}" width="100%" height="800"></svg>
+<script>
+  const graphData = {{ graph_data }};
+  const svg = d3.select("#svg-{{ unique_id }}");
+  const width = svg.node().getBoundingClientRect().width;
+  const height = +svg.attr("height");
+
+  // 将数据转换为D3可以理解的层级结构
+  const root = d3.hierarchy(graphData);
+  const links = root.links();
+  const nodes = root.descendants();
+
+  // 创建一个力导向模拟
+  const simulation = d3.forceSimulation(nodes)
+      .force("link", d3.forceLink(links).id(d => d.data.name).distance(100).strength(1))
+      .force("charge", d3.forceManyBody().strength(-200))
+      .force("center", d3.forceCenter(width / 2, height / 2));
+
+  const link = svg.append("g")
+    .selectAll("line")
+    .data(links)
+    .join("line")
+      .attr("stroke", "#999")
+      .attr("stroke-opacity", 0.6);
+
+  const node = svg.append("g")
+    .selectAll("circle")
+    .data(nodes)
+    .join("circle")
+      .attr("r", d => {
+        // 如果启用了掌握程度显示且节点有size属性，使用自定义大小
+        if ({{ show_mastery|lower }} && d.data.size) {
+          return d.data.size;
+        }
+        return 15; // 默认大小
+      })
+      .attr("fill", d => {
+        // 如果启用了掌握程度显示且节点有color属性，使用自定义颜色
+        if ({{ show_mastery|lower }} && d.data.color) {
+          return d.data.color;
+        }
+        // 否则使用原来的generation_id颜色方案
+        return d3.schemeCategory10[(d.data.generation_id || 0) % 10];
+      })
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 1.5)
+      .call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended))
+      .on("mouseover", function(event, d) {
+        // 添加鼠标悬停效果（仅在显示掌握程度时）
+        if ({{ show_mastery|lower }} && d.data.mastery_level !== undefined) {
+          const masteryText = {
+            0: "未评估",
+            1: "薄弱环节",
+            2: "基本掌握",
+            3: "熟练掌握"
+          }[d.data.mastery_level] || "未知";
+
+          // 创建提示框
+          const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("position", "absolute")
+            .style("background", "rgba(0,0,0,0.8)")
+            .style("color", "white")
+            .style("padding", "8px")
+            .style("border-radius", "4px")
+            .style("font-size", "12px")
+            .style("pointer-events", "none")
+            .style("z-index", "1000")
+            .html(`<strong>${d.data.name}</strong><br/>掌握程度: ${masteryText}`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 10) + "px");
+        }
+      })
+      .on("mouseout", function() {
+        // 移除提示框
+        d3.selectAll(".tooltip").remove();
+      });
+
+  const text = svg.append("g")
+      .attr("class", "node-label")
+    .selectAll("text")
+    .data(nodes)
+    .join("text")
+      .text(d => d.data.name)
+      .attr("text-anchor", "middle")
+      .attr("dy", ".35em");
+
+  simulation.on("tick", () => {
+    link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+    node
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+    text
+        .attr("x", d => d.x)
+        .attr("y", d => d.y);
+  });
+
+  // 拖拽函数
+  function dragstarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+  function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+  }
+  function dragended(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+
+
+</script>
+</body>

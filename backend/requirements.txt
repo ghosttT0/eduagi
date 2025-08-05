@@ -1,42 +1,7 @@
-# 核心Web框架
+# 极简依赖 - 确保部署成功
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-
-# 数据库
-sqlalchemy==2.0.23
-alembic==1.12.1
-
-# 认证和安全
 python-multipart==0.0.6
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-
-# 配置和环境
 python-dotenv==1.0.0
 pydantic==2.5.0
-pydantic-settings==2.1.0
-
-# HTTP客户端
-requests>=2.30.0
-httpx==0.25.2
-
-# 文件处理
-aiofiles==23.2.1
-
-# AI和AutoGen
-openai>=1.6.1
-pyautogen>=0.2.0
-
-# 数据处理
-numpy>=1.26.0
-pandas>=2.0.0
-
-# 文档处理
-python-docx>=1.0.0
-jinja2>=3.0.0
-
-# 图像处理
-pillow>=10.0.0
-
-# 云存储
-qiniu>=7.0.0 
+requests>=2.30.0 

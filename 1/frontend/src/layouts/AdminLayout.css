@@ -1,0 +1,60 @@
+.admin-layout {
+  min-height: 100vh;
+}
+
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  border-bottom: 1px solid #303030;
+}
+
+.logo h2 {
+  color: white;
+  margin: 0;
+  font-size: 18px;
+}
+
+.admin-header {
+  background: white;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trigger {
+  font-size: 18px;
+  line-height: 64px;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.welcome-text {
+  color: #666;
+  font-size: 14px;
+}
+
+.admin-content {
+  margin: 24px;
+  padding: 24px;
+  background: white;
+  border-radius: 8px;
+  min-height: calc(100vh - 112px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+} 
