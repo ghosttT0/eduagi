@@ -34,65 +34,71 @@ const LoginPage: React.FC = () => {
   return (
     <div className="login-container">
       <div className="login-content">
-        <div className="login-header">
-          <RobotOutlined className="login-logo" />
-          <Title level={2} className="login-title">
-            EduAGI 智能教学系统
-          </Title>
-          <Text type="secondary">基于AI的教育管理平台</Text>
-        </div>
-
-        <Card className="login-card" bordered={false}>
-          <Form
-            name="login"
-            onFinish={onFinish}
-            autoComplete="off"
-            size="large"
-          >
-            <Form.Item
-              name="account_id"
-              rules={[{ required: true, message: '请输入账号！' }]}
-            >
-              <Input
-                prefix={<UserOutlined />}
-                placeholder="请输入账号"
-                autoComplete="username"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="password"
-              rules={[{ required: true, message: '请输入密码！' }]}
-            >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="请输入密码"
-                autoComplete="current-password"
-              />
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                block
-                size="large"
-              >
-                登录
-              </Button>
-            </Form.Item>
-          </Form>
-
-          <div className="login-tips">
-            <Text type="secondary">
-              <strong>默认账号：</strong><br />
-              管理员：admin / admin123<br />
-              教师：T001 / teacher123<br />
-              学生：S001 / student123
-            </Text>
+        <div className="login-form-section">
+          <div className="login-header">
+            <RobotOutlined className="login-logo" />
+            <Title level={2} className="login-title">
+              EduAGI 智能教学系统
+            </Title>
+            <Text className="login-subtitle">基于AI的教育管理平台</Text>
           </div>
-        </Card>
+
+          <Card className="login-card" bordered={false}>
+            <Form
+              name="login"
+              onFinish={onFinish}
+              autoComplete="off"
+              size="large"
+            >
+              <Form.Item
+                name="account_id"
+                rules={[{ required: true, message: '请输入账号！' }]}
+              >
+                <Input
+                  prefix={<UserOutlined />}
+                  placeholder="请输入账号"
+                  autoComplete="username"
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="password"
+                rules={[{ required: true, message: '请输入密码！' }]}
+              >
+                <Input.Password
+                  prefix={<LockOutlined />}
+                  placeholder="请输入密码"
+                  autoComplete="current-password"
+                />
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                  block
+                  size="large"
+                >
+                  登录
+                </Button>
+              </Form.Item>
+            </Form>
+
+            <div className="login-tips">
+              <Text>
+                <strong>默认账号：</strong><br />
+                管理员：admin / admin123<br />
+                教师：T001 / teacher123<br />
+                学生：S001 / student123
+              </Text>
+            </div>
+          </Card>
+        </div>
+        
+        <div className="login-decorative-section">
+          {/* 装饰性内容区域 */}
+        </div>
       </div>
     </div>
   )

@@ -1,0 +1,209 @@
+/* 全局响应式样式 */
+
+/* 基础响应式容器 */
+.responsive-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* 响应式网格系统 */
+.responsive-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* 响应式卡片 */
+.responsive-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.responsive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 响应式表格 */
+.responsive-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.responsive-table table {
+  min-width: 600px;
+}
+
+/* 响应式按钮组 */
+.responsive-button-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 响应式表单 */
+.responsive-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 响应式导航 */
+.responsive-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* 响应式侧边栏 */
+.responsive-sidebar {
+  width: 250px;
+  transition: all 0.3s ease;
+}
+
+/* 响应式主内容区 */
+.responsive-main {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+}
+
+/* 响应式布局容器 */
+.responsive-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* 媒体查询 - 移动端 */
+@media (max-width: 768px) {
+  .responsive-container {
+    padding: 0 16px;
+  }
+  
+  .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .responsive-card {
+    padding: 16px;
+  }
+  
+  .responsive-button-group {
+    flex-direction: column;
+  }
+  
+  .responsive-nav {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .responsive-sidebar {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: -100%;
+    height: 100vh;
+    z-index: 1000;
+    background: white;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .responsive-sidebar.open {
+    left: 0;
+  }
+  
+  .responsive-layout {
+    flex-direction: column;
+  }
+  
+  .responsive-main {
+    padding: 16px;
+  }
+}
+
+/* 媒体查询 - 平板 */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .responsive-container {
+    max-width: 900px;
+  }
+  
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+/* 媒体查询 - 桌面端 */
+@media (min-width: 1025px) {
+  .responsive-container {
+    max-width: 1200px;
+  }
+  
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+}
+
+/* 媒体查询 - 大屏 */
+@media (min-width: 1440px) {
+  .responsive-container {
+    max-width: 1400px;
+  }
+}
+
+/* 通用工具类 */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.mb-4 { margin-bottom: 32px; }
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mt-4 { margin-top: 32px; }
+
+.p-0 { padding: 0; }
+.p-1 { padding: 8px; }
+.p-2 { padding: 16px; }
+.p-3 { padding: 24px; }
+.p-4 { padding: 32px; }
+
+/* 响应式字体大小 */
+.responsive-text-sm { font-size: 14px; }
+.responsive-text-base { font-size: 16px; }
+.responsive-text-lg { font-size: 18px; }
+.responsive-text-xl { font-size: 20px; }
+.responsive-text-2xl { font-size: 24px; }
+
+@media (max-width: 768px) {
+  .responsive-text-sm { font-size: 12px; }
+  .responsive-text-base { font-size: 14px; }
+  .responsive-text-lg { font-size: 16px; }
+  .responsive-text-xl { font-size: 18px; }
+  .responsive-text-2xl { font-size: 20px; }
+}
+
+/* 响应式间距 */
+.responsive-gap-sm { gap: 8px; }
+.responsive-gap-md { gap: 16px; }
+.responsive-gap-lg { gap: 24px; }
+.responsive-gap-xl { gap: 32px; }
+
+@media (max-width: 768px) {
+  .responsive-gap-sm { gap: 4px; }
+  .responsive-gap-md { gap: 8px; }
+  .responsive-gap-lg { gap: 16px; }
+  .responsive-gap-xl { gap: 24px; }
+} 

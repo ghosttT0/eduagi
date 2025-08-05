@@ -5,6 +5,7 @@ import AdminLayout from './layouts/AdminLayout'
 import TeacherLayout from './layouts/TeacherLayout'
 import StudentLayout from './layouts/StudentLayout'
 import './App.css'
+import './styles/global.css'
 
 function App() {
   const { user, isAuthenticated } = useAuthStore()
