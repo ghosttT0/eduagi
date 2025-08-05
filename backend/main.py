@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine, Base
+from database import engine, Base, init_db
 
-# 创建数据库表
+# 创建数据库表并初始化数据
 Base.metadata.create_all(bind=engine)
+init_db()  # 初始化默认用户和班级
 
 # 创建FastAPI应用
 app = FastAPI(
