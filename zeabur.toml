@@ -2,11 +2,10 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "cd backend; uvicorn app:app --host 0.0.0.0 --port 8000"
+startCommand = "cd backend; uvicorn main-ultra-simple:app --host 0.0.0.0 --port $PORT"
 
 [env]
 PYTHON_VERSION = "3.11"
-PORT = "8000"
 DATABASE_URL = "sqlite:///./teaching.db"
 SECRET_KEY = "your-secret-key-here"
 CORS_ORIGINS = "https://your-frontend-domain.com"
@@ -15,6 +14,6 @@ CORS_ORIGINS = "https://your-frontend-domain.com"
 python = "3.11"
 
 [build.scripts]
-backend-install = "cd backend; pip install -r requirements.txt"
+backend-install = "cd backend; pip install -r requirements-ultra-minimal.txt"
 frontend-install = "cd frontend; cp package-minimal.json package.json; npm ci"
 frontend-build = "cd frontend; npm run build" 
