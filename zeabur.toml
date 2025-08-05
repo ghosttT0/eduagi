@@ -1,8 +1,9 @@
 [build]
-builder = "nixpacks"
+builder = "dockerfile"
+dockerfilePath = "backend/Dockerfile"
 
 [deploy]
-startCommand = "cd backend; uvicorn main-ultra-simple:app --host 0.0.0.0 --port $PORT"
+startCommand = "uvicorn main-ultra-simple:app --host 0.0.0.0 --port $PORT"
 
 [env]
 PYTHON_VERSION = "3.11"
@@ -14,6 +15,5 @@ CORS_ORIGINS = "https://your-frontend-domain.com"
 python = "3.11"
 
 [build.scripts]
-backend-install = "cd backend; pip install -r requirements-ultra-minimal.txt"
 frontend-install = "cd frontend; cp package-minimal.json package.json; npm ci"
 frontend-build = "cd frontend; npm run build" 
