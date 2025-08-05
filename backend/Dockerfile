@@ -9,6 +9,6 @@ COPY main-ultra-simple.py .
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main-ultra-simple:app", "--host", "0.0.0.0", "--port", "8000"] 
+CMD ["sh", "-c", "uvicorn main-ultra-simple:app --host 0.0.0.0 --port $PORT"] 
  
  
