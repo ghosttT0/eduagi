@@ -18,6 +18,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:3001", 
+        "https://eduagi.zeabur.app",
+        "https://eduagi-fullstack.zeabur.app",
         "https://*.zeabur.app",
         "https://*.onrender.com",
         "https://*.hf.space"

@@ -3,13 +3,13 @@ builder = "dockerfile"
 dockerfilePath = "backend/Dockerfile"
 
 [deploy]
-startCommand = "uvicorn main-ultra-simple:app --host 0.0.0.0 --port $PORT"
+startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
 
 [env]
 PYTHON_VERSION = "3.11"
 DATABASE_URL = "sqlite:///./teaching.db"
 SECRET_KEY = "your-secret-key-here"
-CORS_ORIGINS = "https://your-frontend-domain.com"
+CORS_ORIGINS = "https://eduagi.zeabur.app,https://eduagi-fullstack.zeabur.app"
 
 [build.packages]
 python = "3.11"
