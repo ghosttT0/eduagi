@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Card, Row, Col, Button, Input, Select, Modal, Form, message, Tabs, Typography, Space, Alert } from 'antd'
-import { PlusOutlined, FileTextOutlined, BrainOutlined, BookOutlined } from '@ant-design/icons'
+import { PlusOutlined, FileTextOutlined, BulbOutlined, BookOutlined } from '@ant-design/icons'
 
 const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
@@ -190,7 +190,7 @@ const TeacherDashboardPage: React.FC = () => {
         <TabPane tab={<span><BookOutlined />试卷管理</span>} key="exams">
           {renderExams()}
         </TabPane>
-        <TabPane tab={<span><BrainOutlined />思维导图</span>} key="mindmaps">
+        <TabPane tab={<span><BulbOutlined />思维导图</span>} key="mindmaps">
           {renderMindMaps()}
         </TabPane>
       </Tabs>
