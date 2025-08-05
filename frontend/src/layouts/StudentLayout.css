@@ -1,5 +1,27 @@
 .student-layout {
   min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+}
+
+.student-layout .ant-layout-sider {
+  flex-shrink: 0;
+  width: 220px !important;
+  min-width: 220px !important;
+  max-width: 220px !important;
+}
+
+.student-layout .ant-layout-sider-collapsed {
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+}
+
+.student-layout .ant-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .student-header {
@@ -9,13 +31,69 @@
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  height: 64px;
 }
 
 .student-content {
+  flex: 1;
   margin: 24px;
   padding: 24px;
   background: white;
   border-radius: 8px;
-  min-height: calc(100vh - 112px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo h2 {
+  margin: 0;
+  color: white;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.welcome-text {
+  color: #333;
+  font-weight: 500;
+}
+
+.trigger {
+  font-size: 18px;
+  line-height: 64px;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.trigger:hover {
+  color: #1890ff;
+}
+
+/* 确保内容区域在小屏幕上也能正常显示 */
+@media (max-width: 768px) {
+  .student-layout .ant-layout-sider {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+  }
+  
+  .student-content {
+    margin: 12px;
+    padding: 16px;
+  }
 } 
