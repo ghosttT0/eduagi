@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "cd backend; uvicorn main:app --host 0.0.0.0 --port $PORT"
+startCommand = "cd backend; uvicorn main-simple:app --host 0.0.0.0 --port $PORT"
 
 [env]
 PYTHON_VERSION = "3.11"
@@ -14,6 +14,6 @@ CORS_ORIGINS = "https://your-frontend-domain.com"
 python = "3.11"
 
 [build.scripts]
-backend-install = "cd backend; pip install -r requirements-deploy.txt"
+backend-install = "cd backend; pip install -r requirements-minimal.txt"
 frontend-install = "cd frontend; cp package-minimal.json package.json; npm ci"
 frontend-build = "cd frontend; npm run build" 
