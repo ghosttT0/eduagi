@@ -144,4 +144,89 @@ export const manageAPI = {
     api.post('/api/manage/restore', { backup_id }),
 }
 
+// 教师相关API
+export const teacherAPI = {
+  // 教学计划
+  getTeachingPlans: () => api.get('/api/teacher/teaching-plans'),
+  createTeachingPlan: (data: any) => api.post('/api/teacher/teaching-plans', data),
+  getTeachingPlan: (id: number) => api.get(`/api/teacher/teaching-plans/${id}`),
+  updateTeachingPlan: (id: number, data: any) => api.put(`/api/teacher/teaching-plans/${id}`, data),
+  deleteTeachingPlan: (id: number) => api.delete(`/api/teacher/teaching-plans/${id}`),
+  
+  // 试卷管理
+  getExams: () => api.get('/api/teacher/exams'),
+  createExam: (data: any) => api.post('/api/teacher/exams', data),
+  getExam: (id: number) => api.get(`/api/teacher/exams/${id}`),
+  updateExam: (id: number, data: any) => api.put(`/api/teacher/exams/${id}`, data),
+  deleteExam: (id: number) => api.delete(`/api/teacher/exams/${id}`),
+  
+  // 思维导图
+  getMindMaps: () => api.get('/api/teacher/mindmaps'),
+  createMindMap: (data: any) => api.post('/api/teacher/mindmaps', data),
+  getMindMap: (id: number) => api.get(`/api/teacher/mindmaps/${id}`),
+  updateMindMap: (id: number, data: any) => api.put(`/api/teacher/mindmaps/${id}`, data),
+  deleteMindMap: (id: number) => api.delete(`/api/teacher/mindmaps/${id}`),
+  
+  // 学生管理
+  getStudents: () => api.get('/api/teacher/students'),
+  getStudent: (id: number) => api.get(`/api/teacher/students/${id}`),
+  updateStudent: (id: number, data: any) => api.put(`/api/teacher/students/${id}`, data),
+  
+  // 课程管理
+  getCourses: () => api.get('/api/teacher/courses'),
+  createCourse: (data: any) => api.post('/api/teacher/courses', data),
+  getCourse: (id: number) => api.get(`/api/teacher/courses/${id}`),
+  updateCourse: (id: number, data: any) => api.put(`/api/teacher/courses/${id}`, data),
+  deleteCourse: (id: number) => api.delete(`/api/teacher/courses/${id}`),
+}
+
+// 学生相关API
+export const studentAPI = {
+  // 学习记录
+  getLearningHistory: () => api.get('/api/student/learning-history'),
+  createLearningRecord: (data: any) => api.post('/api/student/learning-records', data),
+  
+  // 笔记管理
+  getNotes: () => api.get('/api/student/notes'),
+  createNote: (data: any) => api.post('/api/student/notes', data),
+  getNote: (id: number) => api.get(`/api/student/notes/${id}`),
+  updateNote: (id: number, data: any) => api.put(`/api/student/notes/${id}`, data),
+  deleteNote: (id: number) => api.delete(`/api/student/notes/${id}`),
+  
+  // 考试记录
+  getExams: () => api.get('/api/student/exams'),
+  getExam: (id: number) => api.get(`/api/student/exams/${id}`),
+  submitExam: (id: number, data: any) => api.post(`/api/student/exams/${id}/submit`, data),
+  
+  // AI对话
+  getChatHistory: () => api.get('/api/student/chat-history'),
+  sendMessage: (data: any) => api.post('/api/student/chat', data),
+  clearChatHistory: () => api.delete('/api/student/chat-history'),
+  
+  // 知识掌握
+  getKnowledgeMastery: () => api.get('/api/student/knowledge-mastery'),
+  updateKnowledgeMastery: (data: any) => api.post('/api/student/knowledge-mastery', data),
+}
+
+// 管理员相关API
+export const adminAPI = {
+  // 用户管理
+  getUsers: (params?: any) => api.get('/api/admin/users', { params }),
+  createUser: (data: any) => api.post('/api/admin/users', data),
+  getUser: (id: number) => api.get(`/api/admin/users/${id}`),
+  updateUser: (id: number, data: any) => api.put(`/api/admin/users/${id}`, data),
+  deleteUser: (id: number) => api.delete(`/api/admin/users/${id}`),
+  
+  // 班级管理
+  getClasses: () => api.get('/api/admin/classes'),
+  createClass: (data: any) => api.post('/api/admin/classes', data),
+  getClass: (id: number) => api.get(`/api/admin/classes/${id}`),
+  updateClass: (id: number, data: any) => api.put(`/api/admin/classes/${id}`, data),
+  deleteClass: (id: number) => api.delete(`/api/admin/classes/${id}`),
+  
+  // 系统统计
+  getSystemStats: () => api.get('/api/admin/system-stats'),
+  getActivityLogs: (params?: any) => api.get('/api/admin/activity-logs', { params }),
+}
+
 export default api 
