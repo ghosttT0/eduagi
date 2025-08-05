@@ -1,10 +1,13 @@
 .login-container {
   min-height: 100vh;
+  height: 100%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  width: 100%;
+  position: relative;
 }
 
 .login-content {
@@ -138,7 +141,7 @@
   line-height: 1.6;
 }
 
-/* 响应式设计 */
+/* 增强响应式设计 */
 @media (max-width: 768px) {
   .login-content {
     flex-direction: column;
@@ -159,20 +162,20 @@
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 769px) and (max-width: 1200px) {
+  .login-content {
+    max-width: 90vw;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1600px) {
+  .login-content {
+    max-width: 1200px;
+  }
+}
+
+@media (min-width: 1601px) {
   .login-content {
     max-width: 1400px;
   }
 }
-
-@media (min-width: 1600px) {
-  .login-content {
-    max-width: 1600px;
-  }
-}
-
-@media (min-width: 1920px) {
-  .login-content {
-    max-width: 1800px;
-  }
-} 
