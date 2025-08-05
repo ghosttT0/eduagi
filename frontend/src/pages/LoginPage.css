@@ -10,6 +10,28 @@
 .login-content {
   width: 100%;
   max-width: 400px;
+  margin: 0 auto;
+  transition: max-width 0.2s;
+}
+
+@media (min-width: 900px) {
+  .login-content {
+    max-width: 500px;
+  }
+}
+@media (min-width: 1200px) {
+  .login-content {
+    max-width: 600px;
+  }
+}
+@media (max-width: 600px) {
+  .login-content {
+    max-width: 95vw;
+    min-width: 0;
+  }
+  .login-card {
+    padding: 16px 8px !important;
+  }
 }
 
 .login-header {
@@ -34,6 +56,8 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.95);
+  padding: 32px 24px;
+  box-sizing: border-box;
 }
 
 .login-tips {
