@@ -1,6 +1,5 @@
 # utils_autogen.py (使用AutoGen替代LangChain)
 import os
-import streamlit as st
 from dotenv import load_dotenv
 import autogen
 from typing import List, Dict, Any
@@ -176,7 +175,6 @@ class AutoGenManager:
 # 全局AutoGen管理器实例
 _autogen_manager = None
 
-@st.cache_resource
 def get_autogen_manager():
     """获取AutoGen管理器实例（缓存）"""
     global _autogen_manager
@@ -187,7 +185,6 @@ def get_autogen_manager():
     return _autogen_manager
 
 # 兼容性函数 - 替代原来的load_conversational_chain
-@st.cache_resource
 def load_conversational_chain():
     """
     加载并缓存AutoGen对话管理器（替代原来的LangChain对话链）
