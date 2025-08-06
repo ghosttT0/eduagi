@@ -17,7 +17,7 @@ import {
 import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons'
 import { userAPI, classAPI } from '../../services/api'
 
-const { Title } = Typography
+const { Title, Text } = Typography
 const { Option } = Select
 
 interface User {
