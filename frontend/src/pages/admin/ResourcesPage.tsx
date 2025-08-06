@@ -28,7 +28,7 @@ import {
   DeleteOutlined,
   UploadOutlined,
   FileOutlined,
-  VideoOutlined,
+  VideoCameraOutlined,
   FileImageOutlined,
   FilePdfOutlined,
   FileWordOutlined,
@@ -261,7 +261,7 @@ const ResourcesPage: React.FC = () => {
 
   const getFileIcon = (type: string) => {
     switch (type) {
-      case 'video': return <VideoOutlined style={{ color: '#ff4d4f' }} />
+      case 'video': return <VideoCameraOutlined style={{ color: '#ff4d4f' }} />
       case 'image': return <FileImageOutlined style={{ color: '#52c41a' }} />
       case 'document': return <FilePdfOutlined style={{ color: '#1890ff' }} />
       default: return <FileOutlined style={{ color: '#8c8c8c' }} />
@@ -481,7 +481,7 @@ const ResourcesPage: React.FC = () => {
               <Statistic
                 title="视频资源"
                 value={videoCount}
-                prefix={<VideoOutlined />}
+                prefix={<VideoCameraOutlined />}
                 valueStyle={{ color: '#722ed1' }}
               />
             </Card>
