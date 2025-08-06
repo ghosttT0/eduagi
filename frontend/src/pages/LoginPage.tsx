@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Form, Input, Button, Card, message, Typography } from 'antd'
-import { UserOutlined, LockOutlined, RobotOutlined } from '@ant-design/icons'
+import { UserOutlined, LockOutlined, PhoneOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { authAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
@@ -54,31 +54,43 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="login-container">
-      <div className="login-content">
-        <div className="login-form-section">
-          <div className="login-header">
-            <RobotOutlined className="login-logo" />
-            <Title level={2} className="login-title">
-              EduAGI 智能教学系统
-            </Title>
-            <Text className="login-subtitle">基于AI的教育管理平台</Text>
+      <Card className="login-main-card">
+        {/* 左侧图片栏 */}
+        <div className="login-image-section">
+          <div className="login-logo-wrapper">
+            <div className="logo-circle">L</div>
           </div>
+          <div className="image-overlay"></div>
+        </div>
 
-          <Card className="login-card" bordered={false}>
+        {/* 右侧表单栏 */}
+        <div className="login-form-section">
+          <div className="form-content">
+            <div className="login-header">
+              <Title level={1} className="login-title">
+                We are Login
+              </Title>
+              <Text className="login-subtitle">
+                Welcome back! Log in to your account.
+              </Text>
+            </div>
+
             <Form
               name="login"
               onFinish={onFinish}
               autoComplete="off"
               size="large"
+              className="login-form"
             >
               <Form.Item
                 name="account_id"
-                rules={[{ required: true, message: '请输入账号！' }]}
+                rules={[{ required: true, message: '请输入手机号！' }]}
               >
                 <Input
-                  prefix={<UserOutlined />}
-                  placeholder="请输入账号"
+                  prefix={<PhoneOutlined className="input-icon" />}
+                  placeholder="手机号"
                   autoComplete="username"
+                  className="custom-input"
                 />
               </Form.Item>
 
@@ -87,9 +99,10 @@ const LoginPage: React.FC = () => {
                 rules={[{ required: true, message: '请输入密码！' }]}
               >
                 <Input.Password
-                  prefix={<LockOutlined />}
-                  placeholder="请输入密码"
+                  prefix={<LockOutlined className="input-icon" />}
+                  placeholder="密码"
                   autoComplete="current-password"
+                  className="custom-input"
                 />
               </Form.Item>
 
@@ -99,7 +112,7 @@ const LoginPage: React.FC = () => {
                   htmlType="submit"
                   loading={loading}
                   block
-                  size="large"
+                  className="login-button"
                 >
                   登录
                 </Button>
@@ -107,20 +120,16 @@ const LoginPage: React.FC = () => {
             </Form>
 
             <div className="login-tips">
-              <Text>
-                <strong>默认账号：</strong><br />
+              <Text className="tips-text">
+                <strong>测试账号：</strong><br />
                 管理员：admin / admin123<br />
                 教师：T001 / teacher123<br />
                 学生：S001 / student123
               </Text>
             </div>
-          </Card>
+          </div>
         </div>
-        
-        <div className="login-decorative-section">
-          {/* 装饰性内容区域 */}
-        </div>
-      </div>
+      </Card>
     </div>
   )
 }
