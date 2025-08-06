@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { Layout, Menu, Button, Avatar, Dropdown, message } from 'antd'
 import {
   DashboardOutlined,
+  BulbOutlined,
+  ShareAltOutlined,
   FileTextOutlined,
   VideoCameraOutlined,
-  EditOutlined,
-  BookOutlined,
   SettingOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -30,24 +30,24 @@ const TeacherLayout: React.FC = () => {
       label: '仪表板',
     },
     {
-      key: '/teacher/resources',
+      key: '/teacher/teaching-plans',
+      icon: <BulbOutlined />,
+      label: '智能教学设计',
+    },
+    {
+      key: '/teacher/mindmaps',
+      icon: <ShareAltOutlined />,
+      label: 'AI知识图谱',
+    },
+    {
+      key: '/teacher/exam-generator',
       icon: <FileTextOutlined />,
-      label: '资源管理',
+      label: '智能出题',
     },
     {
       key: '/teacher/videos',
       icon: <VideoCameraOutlined />,
-      label: '视频分析',
-    },
-    {
-      key: '/teacher/exams',
-      icon: <EditOutlined />,
-      label: '考试管理',
-    },
-    {
-      key: '/teacher/notes',
-      icon: <BookOutlined />,
-      label: '笔记管理',
+      label: '视频管理',
     },
     {
       key: '/teacher/settings',

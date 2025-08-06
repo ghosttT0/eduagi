@@ -2,9 +2,10 @@ import React, { useState } from 'react'
 import { Layout, Menu, Button, Avatar, Dropdown, message } from 'antd'
 import {
   DashboardOutlined,
-  FileTextOutlined,
+  RobotOutlined,
+  EditOutlined,
   VideoCameraOutlined,
-  BookOutlined,
+  QuestionCircleOutlined,
   SettingOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -29,9 +30,14 @@ const StudentLayout: React.FC = () => {
       label: '学习中心',
     },
     {
-      key: '/student/resources',
-      icon: <FileTextOutlined />,
-      label: '学习资源',
+      key: '/student/ai-partner',
+      icon: <RobotOutlined />,
+      label: 'AI学习伙伴',
+    },
+    {
+      key: '/student/practice',
+      icon: <EditOutlined />,
+      label: '自主练习',
     },
     {
       key: '/student/videos',
@@ -39,14 +45,9 @@ const StudentLayout: React.FC = () => {
       label: '视频学习',
     },
     {
-      key: '/student/exams',
-      icon: <BookOutlined />,
-      label: '考试中心',
-    },
-    {
-      key: '/student/notes',
-      icon: <BookOutlined />,
-      label: '我的笔记',
+      key: '/student/disputes',
+      icon: <QuestionCircleOutlined />,
+      label: '向老师提问',
     },
     {
       key: '/student/settings',
