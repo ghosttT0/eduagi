@@ -11,8 +11,10 @@ import {
   Popconfirm,
   Typography,
   Card,
+  Tag,
+  Tooltip,
 } from 'antd'
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons'
 import { userAPI, classAPI } from '../../services/api'
 
 const { Title } = Typography
@@ -39,6 +41,35 @@ const UsersPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [form] = Form.useForm()
+  const [searchText, setSearchText] = useState('')
+  const [selectedRole, setSelectedRole] = useState<string>('')
+
+  // 模拟数据
+  const mockUsers: User[] = [
+    { id: 1, account_id: 'admin', display_name: '系统管理员', role: '管理员', class_id: undefined },
+    { id: 2, account_id: 'T001', display_name: '张教授', role: '教师', class_id: 1 },
+    { id: 3, account_id: 'T002', display_name: '李教授', role: '教师', class_id: 2 },
+    { id: 4, account_id: 'T003', display_name: '王教授', role: '教师', class_id: 3 },
+    { id: 5, account_id: 'S001', display_name: '张三', role: '学生', class_id: 1 },
+    { id: 6, account_id: 'S002', display_name: '李四', role: '学生', class_id: 1 },
+    { id: 7, account_id: 'S003', display_name: '王五', role: '学生', class_id: 2 },
+    { id: 8, account_id: 'S004', display_name: '赵六', role: '学生', class_id: 2 },
+    { id: 9, account_id: 'S005', display_name: '钱七', role: '学生', class_id: 3 },
+    { id: 10, account_id: 'S006', display_name: '孙八', role: '学生', class_id: 3 },
+    { id: 11, account_id: 'T004', display_name: '陈教授', role: '教师', class_id: 4 },
+    { id: 12, account_id: 'S007', display_name: '周九', role: '学生', class_id: 4 },
+    { id: 13, account_id: 'S008', display_name: '吴十', role: '学生', class_id: 1 },
+    { id: 14, account_id: 'T005', display_name: '刘教授', role: '教师', class_id: 5 },
+    { id: 15, account_id: 'S009', display_name: '郑一', role: '学生', class_id: 5 }
+  ]
+
+  const mockClasses: Class[] = [
+    { id: 1, name: '计算机科学2024级1班', description: '计算机科学与技术专业' },
+    { id: 2, name: '软件工程2024级1班', description: '软件工程专业' },
+    { id: 3, name: '人工智能2024级1班', description: '人工智能专业' },
+    { id: 4, name: '数据科学2024级1班', description: '数据科学与大数据技术专业' },
+    { id: 5, name: '网络工程2024级1班', description: '网络工程专业' }
+  ]
 
   useEffect(() => {
     fetchUsers()
@@ -48,19 +79,21 @@ const UsersPage: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true)
     try {
-      const response = await userAPI.getUsers()
-      setUsers(response.data)
+      // 使用模拟数据，实际项目中应该调用API
+      setTimeout(() => {
+        setUsers(mockUsers)
+        setLoading(false)
+      }, 500)
     } catch (error) {
       message.error('获取用户列表失败')
-    } finally {
       setLoading(false)
     }
   }
 
   const fetchClasses = async () => {
     try {
-      const response = await classAPI.getClasses()
-      setClasses(response.data)
+      // 使用模拟数据，实际项目中应该调用API
+      setClasses(mockClasses)
     } catch (error) {
       message.error('获取班级列表失败')
     }
@@ -110,83 +143,179 @@ const UsersPage: React.FC = () => {
       dataIndex: 'id',
       key: 'id',
       width: 80,
+      sorter: (a: User, b: User) => a.id - b.id,
     },
     {
       title: '账号',
       dataIndex: 'account_id',
       key: 'account_id',
+      width: 120,
+      sorter: (a: User, b: User) => a.account_id.localeCompare(b.account_id),
     },
     {
       title: '姓名',
       dataIndex: 'display_name',
       key: 'display_name',
+      width: 120,
+      sorter: (a: User, b: User) => a.display_name.localeCompare(b.display_name),
     },
     {
       title: '角色',
       dataIndex: 'role',
       key: 'role',
+      width: 100,
+      render: (role: string) => {
+        const colors = {
+          '管理员': 'red',
+          '教师': 'blue',
+          '学生': 'green'
+        }
+        return <Tag color={colors[role as keyof typeof colors]}>{role}</Tag>
+      },
+      filters: [
+        { text: '管理员', value: '管理员' },
+        { text: '教师', value: '教师' },
+        { text: '学生', value: '学生' },
+      ],
+      onFilter: (value: any, record: User) => record.role === value,
     },
     {
       title: '班级',
       dataIndex: 'class_id',
       key: 'class_id',
+      width: 200,
       render: (class_id: number) => {
         const classItem = classes.find(c => c.id === class_id)
-        return classItem?.name || '-'
+        return classItem ? (
+          <Tag color="purple">{classItem.name}</Tag>
+        ) : (
+          <Text type="secondary">未分配</Text>
+        )
+      },
+    },
+    {
+      title: '创建时间',
+      key: 'created_at',
+      width: 120,
+      render: () => {
+        // 模拟创建时间
+        const dates = ['2024-08-01', '2024-08-02', '2024-08-03', '2024-08-04', '2024-08-05']
+        return <Text type="secondary">{dates[Math.floor(Math.random() * dates.length)]}</Text>
+      },
+    },
+    {
+      title: '状态',
+      key: 'status',
+      width: 80,
+      render: () => {
+        // 模拟用户状态
+        const isActive = Math.random() > 0.2
+        return (
+          <Tag color={isActive ? 'green' : 'red'}>
+            {isActive ? '活跃' : '禁用'}
+          </Tag>
+        )
       },
     },
     {
       title: '操作',
       key: 'action',
       width: 200,
+      fixed: 'right',
       render: (_: any, record: User) => (
-        <Space size="middle">
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            编辑
-          </Button>
+        <Space size="small">
+          <Tooltip title="编辑用户">
+            <Button
+              type="link"
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+              size="small"
+            />
+          </Tooltip>
+          <Tooltip title="重置密码">
+            <Button
+              type="link"
+              icon={<SettingOutlined />}
+              size="small"
+            />
+          </Tooltip>
           <Popconfirm
             title="确定要删除这个用户吗？"
+            description="删除后将无法恢复，请谨慎操作。"
             onConfirm={() => handleDelete(record.id)}
             okText="确定"
             cancelText="取消"
           >
-            <Button type="link" danger icon={<DeleteOutlined />}>
-              删除
-            </Button>
+            <Tooltip title="删除用户">
+              <Button
+                type="link"
+                danger
+                icon={<DeleteOutlined />}
+                size="small"
+              />
+            </Tooltip>
           </Popconfirm>
         </Space>
       ),
     },
   ]
 
+  // 过滤用户数据
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.display_name.toLowerCase().includes(searchText.toLowerCase()) ||
+                         user.account_id.toLowerCase().includes(searchText.toLowerCase())
+    const matchesRole = selectedRole === '' || user.role === selectedRole
+    return matchesSearch && matchesRole
+  })
+
   return (
     <div>
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <Title level={2}>用户管理</Title>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-          >
-            添加用户
-          </Button>
+          <Space>
+            <Input.Search
+              placeholder="搜索用户名或账号"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 200 }}
+              allowClear
+            />
+            <Select
+              placeholder="筛选角色"
+              value={selectedRole}
+              onChange={setSelectedRole}
+              style={{ width: 120 }}
+              allowClear
+            >
+              <Option value="">全部角色</Option>
+              <Option value="管理员">管理员</Option>
+              <Option value="教师">教师</Option>
+              <Option value="学生">学生</Option>
+            </Select>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+            >
+              添加用户
+            </Button>
+          </Space>
         </div>
 
         <Table
           columns={columns}
-          dataSource={users}
+          dataSource={filteredUsers}
           loading={loading}
           rowKey="id"
           pagination={{
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 条记录`,
+            showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            defaultPageSize: 10,
           }}
+          scroll={{ x: 800 }}
         />
       </Card>
 
