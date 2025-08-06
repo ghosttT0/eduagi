@@ -113,32 +113,32 @@ export const adminAPI = {
 
 // 用户管理API
 export const userAPI = {
-  getUsers: (params?: any) => api.get('/api/users', { params }),
-  getUser: (id: number) => api.get(`/api/users/${id}`),
-  createUser: (data: any) => api.post('/api/users', data),
-  updateUser: (id: number, data: any) => api.put(`/api/users/${id}`, data),
-  deleteUser: (id: number) => api.delete(`/api/users/${id}`),
+  getUsers: (params?: any) => api.get('/users', { params }),
+  getUser: (id: number) => api.get(`/users/${id}`),
+  createUser: (data: any) => api.post('/users', data),
+  updateUser: (id: number, data: any) => api.put(`/users/${id}`, data),
+  deleteUser: (id: number) => api.delete(`/users/${id}`),
 }
 
 // 班级管理API
 export const classAPI = {
-  getClasses: () => api.get('/api/classes'),
-  getClass: (id: number) => api.get(`/api/classes/${id}`),
-  createClass: (data: any) => api.post('/api/classes', data),
-  updateClass: (id: number, data: any) => api.put(`/api/classes/${id}`, data),
-  deleteClass: (id: number) => api.delete(`/api/classes/${id}`),
+  getClasses: () => api.get('/classes'),
+  getClass: (id: number) => api.get(`/classes/${id}`),
+  createClass: (data: any) => api.post('/classes', data),
+  updateClass: (id: number, data: any) => api.put(`/classes/${id}`, data),
+  deleteClass: (id: number) => api.delete(`/classes/${id}`),
 }
 
 // 视频分析API
 export const videoAPI = {
   analyzeVideo: (video_url: string) =>
-    api.post('/api/videos/analyze', { video_url }),
+    api.post('/videos/analyze', { video_url }),
   getVideoInfo: (video_url: string) =>
-    api.get('/api/videos/info', { params: { video_url } }),
+    api.get('/videos/info', { params: { video_url } }),
   getAnalysisHistory: (params?: any) =>
-    api.get('/api/videos/history', { params }),
-  getAnalysisResult: (id: number) => api.get(`/api/videos/${id}`),
-  deleteAnalysis: (id: number) => api.delete(`/api/videos/${id}`),
+    api.get('/videos/history', { params }),
+  getAnalysisResult: (id: number) => api.get(`/videos/${id}`),
+  deleteAnalysis: (id: number) => api.delete(`/videos/${id}`),
 }
 
 // 考试管理API
