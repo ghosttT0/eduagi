@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { ConfigProvider } from 'antd'
 import { useAuthStore } from './stores/authStore'
+import { adminTheme } from './theme/adminTheme'
 import LoginPage from './pages/LoginPage'
 import AdminLayout from './layouts/AdminLayout'
 import TeacherLayout from './layouts/TeacherLayout'
@@ -90,12 +92,14 @@ function App() {
           <Route path="settings" element={<div>个人设置页面</div>} />
         </Route>
 
-        {/* 管理员路由 */}
+        {/* 管理员路由 - 应用自定义主题 */}
         <Route 
           path="/admin/*" 
           element={
             <ProtectedRoute>
-              <AdminLayout />
+              <ConfigProvider theme={adminTheme}>
+                <AdminLayout />
+              </ConfigProvider>
             </ProtectedRoute>
           }
         >

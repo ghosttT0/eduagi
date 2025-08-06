@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Layout, Menu, Button, Avatar, Dropdown, message } from 'antd'
+import { Layout, Menu, Button, Avatar, Input, Space, Typography, Badge } from 'antd'
 import {
   DashboardOutlined,
   UserOutlined,
@@ -11,12 +11,38 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  SearchOutlined,
+  BellOutlined,
+  ShareAltOutlined,
 } from '@ant-design/icons'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import './AdminLayout.css'
 
 const { Header, Sider, Content } = Layout
+const { Text } = Typography
+
+// 侧边栏头部组件
+const SiderHeader = ({ user }: { user: any }) => (
+  <div className="admin-sider-header">
+    <Avatar 
+      size={48} 
+      icon={<UserOutlined />}
+      style={{ 
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: '#fff'
+      }}
+    />
+    <div className="user-profile">
+      <Text strong className="user-name">
+        {user?.display_name || 'Admin User'}
+      </Text>
+      <Text type="secondary" className="user-role">
+        {user?.role === '管理员' ? 'Pro Member' : user?.role}
+      </Text>
+    </div>
+  </div>
+)
 
 const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false)
@@ -68,53 +94,99 @@ const AdminLayout: React.FC = () => {
 
   const handleLogout = () => {
     logout()
-    message.success('已退出登录')
     navigate('/login')
   }
 
-  const userMenu = (
-    <Menu>
-      <Menu.Item key="profile" icon={<UserOutlined />}>
-        个人资料
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
-        退出登录
-      </Menu.Item>
-    </Menu>
-  )
-
   return (
     <Layout className="admin-layout">
-      <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div className="logo">
-          <h2>{collapsed ? 'EA' : 'EduAGI'}</h2>
+      <Sider 
+        width={280}
+        className="admin-sider"
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+      >
+        <SiderHeader user={user} />
+        
+        <div className="sider-search">
+          <Input 
+            prefix={<SearchOutlined style={{ color: '#8c8c8c' }} />} 
+            placeholder="搜索..." 
+            size="large"
+            style={{ borderRadius: 12 }}
+          />
         </div>
+
         <Menu
-          theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
           onClick={handleMenuClick}
+          className="admin-menu"
         />
+
+        <div className="sider-footer">
+          <Button 
+            type="text" 
+            icon={<LogoutOutlined />} 
+            onClick={handleLogout}
+            className="logout-button"
+          >
+            {!collapsed && '退出登录'}
+          </Button>
+        </div>
       </Sider>
+
       <Layout>
         <Header className="admin-header">
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            className="trigger"
-          />
-          <div className="header-right">
-            <span className="welcome-text">
-              欢迎，{user?.display_name}
-            </span>
-            <Dropdown overlay={userMenu} placement="bottomRight">
-              <Avatar icon={<UserOutlined />} />
-            </Dropdown>
+          <div className="header-left">
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              className="trigger-button"
+            />
+            <div className="page-title">
+              <Text strong style={{ fontSize: 18 }}>
+                {menuItems.find(item => item.key === location.pathname)?.label || '仪表板'}
+              </Text>
+            </div>
           </div>
+
+          <Space align="center" size="large" className="header-right">
+            <Button 
+              type="text" 
+              icon={<ShareAltOutlined />}
+              className="header-action-button"
+            >
+              分享
+            </Button>
+            
+            <Badge count={3} size="small">
+              <Button 
+                type="text" 
+                icon={<BellOutlined />}
+                className="header-action-button"
+              />
+            </Badge>
+
+            <Avatar.Group maxCount={3} size="small">
+              <Avatar style={{ backgroundColor: '#f56a00' }}>A</Avatar>
+              <Avatar style={{ backgroundColor: '#87d068' }}>B</Avatar>
+              <Avatar style={{ backgroundColor: '#1890ff' }}>C</Avatar>
+            </Avatar.Group>
+
+                         <Avatar 
+               size={36}
+               icon={<UserOutlined />}
+               style={{ 
+                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                 color: '#fff'
+               }}
+             />
+          </Space>
         </Header>
+
         <Content className="admin-content">
           <Outlet />
         </Content>

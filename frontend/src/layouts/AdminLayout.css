@@ -1,81 +1,107 @@
-/* 强制应用Flexbox布局 */
+/* 现代化的AdminLayout样式 */
+
 .admin-layout {
-  min-height: 100vh !important;
-  display: flex !important;
-  flex-direction: row !important;
-  width: 100% !important;
+  min-height: 100vh;
 }
 
-/* 侧边栏固定宽度 */
-.admin-layout .ant-layout-sider {
-  flex-shrink: 0 !important;
-  width: 220px !important;
-  min-width: 220px !important;
-  max-width: 220px !important;
-  position: relative !important;
+/* 侧边栏样式 */
+.admin-sider {
+  border-right: 1px solid #F0F0F0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
-.admin-layout .ant-layout-sider-collapsed {
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
-}
-
-/* 主内容区域容器 */
-.admin-layout .ant-layout {
-  flex: 1 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-width: 0 !important;
-  width: auto !important;
-}
-
-/* 头部固定高度 */
-.admin-header {
-  background: white !important;
-  padding: 0 24px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  flex-shrink: 0 !important;
-  height: 64px !important;
-  width: 100% !important;
-}
-
-/* 内容区域自动扩展 */
-.admin-content {
-  flex: 1 !important;
-  margin: 24px !important;
-  padding: 24px !important;
-  background: white !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  overflow-y: auto !important;
-  min-height: 0 !important;
-  width: auto !important;
-  min-width: 0 !important;
-}
-
-/* 确保内容区域内的元素也能正确显示 */
-.admin-content > * {
-  width: 100% !important;
-  min-width: 0 !important;
-}
-
-.logo {
-  height: 64px;
+.admin-sider-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 12px;
+  padding: 16px 8px;
+  margin-bottom: 16px;
 }
 
-.logo h2 {
-  margin: 0;
-  color: white;
+.user-profile {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.sider-search {
+  padding: 0 8px 16px;
+}
+
+.admin-menu {
+  flex: 1;
+  background: transparent;
+  border-right: none;
+}
+
+.sider-footer {
+  padding: 16px 8px;
+  border-top: 1px solid #F0F0F0;
+  margin-top: auto;
+}
+
+.logout-button {
+  width: 100%;
+  height: 40px;
+  color: #8c8c8c;
+  border: none;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  color: #ff4d4f;
+  background: #fff2f0;
+}
+
+/* 头部样式 */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #F0F0F0;
+  padding: 0 24px;
+  background: #FFFFFF;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.trigger-button {
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #5A5A5A;
+  transition: all 0.3s ease;
+}
+
+.trigger-button:hover {
+  color: #7B68EE;
+  background: #f8f9ff;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
 }
 
 .header-right {
@@ -84,45 +110,121 @@
   gap: 16px;
 }
 
-.welcome-text {
-  color: #333;
-  font-weight: 500;
+.header-action-button {
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #5A5A5A;
+  transition: all 0.3s ease;
 }
 
-.trigger {
-  font-size: 18px;
-  line-height: 64px;
-  padding: 0 24px;
-  cursor: pointer;
-  transition: color 0.3s;
+.header-action-button:hover {
+  color: #7B68EE;
+  background: #f8f9ff;
 }
 
-.trigger:hover {
-  color: #1890ff;
+/* 内容区域样式 */
+.admin-content {
+  padding: 32px;
+  background: #F8F9FA;
+  min-height: calc(100vh - 72px);
+}
+
+/* 确保内容区域内的元素正确显示 */
+.admin-content > * {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* 仪表板网格布局 */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.dashboard-card {
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* 仪表板页面样式 */
+.admin-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.dashboard-header .ant-typography {
+  margin-bottom: 8px;
+}
+
+/* 统计卡片特殊样式 */
+.dashboard-card .ant-statistic-title {
+  color: #8c8c8c;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.dashboard-card .ant-statistic-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 活动列表样式 */
+.dashboard-card .ant-list-item {
+  padding: 16px 0;
+  border-bottom: 1px solid #F5F5F5;
+}
+
+.dashboard-card .ant-list-item:last-child {
+  border-bottom: none;
+}
+
+.dashboard-card .ant-list-item-meta-title {
+  margin-bottom: 4px;
+}
+
+/* 进度条容器样式 */
+.dashboard-card .ant-progress {
+  margin-bottom: 0;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .admin-layout .ant-layout-sider {
-    width: 80px !important;
-    min-width: 80px !important;
-    max-width: 80px !important;
+  .admin-sider {
+    padding: 12px;
   }
   
   .admin-content {
-    margin: 12px !important;
-    padding: 16px !important;
+    padding: 24px 16px;
   }
-}
-
-/* 覆盖Ant Design可能的冲突样式 */
-.admin-layout .ant-layout-sider,
-.admin-layout .ant-layout {
-  position: relative !important;
-  float: none !important;
-}
-
-/* 确保没有其他样式干扰 */
-.admin-layout * {
-  box-sizing: border-box;
+  
+  .admin-header {
+    padding: 0 16px;
+  }
+  
+  .header-right {
+    gap: 12px;
+  }
+  
+  .dashboard-header {
+    margin-bottom: 24px;
+  }
+  
+  .admin-dashboard {
+    max-width: 100%;
+  }
 } 
