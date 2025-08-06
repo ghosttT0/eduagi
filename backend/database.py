@@ -127,10 +127,109 @@ class VideoAnalysis(Base):
     # 关系
     user = relationship("User")
 
+# 教学计划模型
+class TeachingPlan(Base):
+    __tablename__ = "teaching_plans"
+
+    id = Column(Integer, primary_key=True, index=True)
+    teacher_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    input_prompt = Column(Text, nullable=False)
+    output_content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=func.now())
+
+    # 关系
+    teacher = relationship("User")
+
+# 思维导图模型
+class MindMap(Base):
+    __tablename__ = "mindmaps"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String(200), nullable=False)
+    topic = Column(String(200), nullable=False)
+    data = Column(Text, nullable=False)  # JSON格式的思维导图数据
+    description = Column(Text, nullable=True)
+    is_public = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=func.now())
+
+    # 关系
+    user = relationship("User")
+
+# 聊天历史模型
+class ChatHistory(Base):
+    __tablename__ = "chat_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=func.now())
+
+    # 关系
+    student = relationship("User")
+
+# 知识点模型
+class KnowledgePoint(Base):
+    __tablename__ = "knowledge_points"
+
+    id = Column(Integer, primary_key=True, index=True)
+    topic = Column(String(200), nullable=False, unique=True)
+    query_count = Column(Integer, default=1)
+    created_at = Column(DateTime, default=func.now())
+
+# 学生疑问模型
+class StudentDispute(Base):
+    __tablename__ = "student_disputes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    class_id = Column(Integer, ForeignKey("classes.id"), nullable=False)
+    question_id = Column(Integer, nullable=True)  # 关联的题目ID
+    message = Column(Text, nullable=False)
+    status = Column(String(20), default="待处理")  # 待处理、已回复、已关闭
+    teacher_reply = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    replied_at = Column(DateTime, nullable=True)
+
+    # 关系
+    student = relationship("User", foreign_keys=[student_id])
+    class_rel = relationship("Class")
+
+# 知识掌握度模型
+class KnowledgeMastery(Base):
+    __tablename__ = "knowledge_mastery"
+
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    knowledge_point = Column(String(200), nullable=False)
+    mastery_level = Column(Integer, nullable=False)  # 1-薄弱, 2-基本, 3-熟练
+    self_assessment = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    # 关系
+    student = relationship("User")
+
+# 视频资源模型
+class VideoResource(Base):
+    __tablename__ = "video_resources"
+
+    id = Column(Integer, primary_key=True, index=True)
+    teacher_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    path = Column(String(500), nullable=False)  # 可以是URL或本地路径
+    status = Column(String(20), default="草稿")  # 草稿、已发布
+    created_at = Column(DateTime, default=func.now())
+
+    # 关系
+    teacher = relationship("User")
+
 # 系统配置模型
 class SystemConfig(Base):
     __tablename__ = "system_configs"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String(100), unique=True, nullable=False)
     value = Column(Text, nullable=True)

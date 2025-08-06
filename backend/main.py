@@ -42,6 +42,9 @@ from api.analytics import analytics_router
 from api.pptgen import pptgen_router
 from api.clouds import clouds_router
 from api.manage import manage_router
+from api.teacher import teacher_router
+from api.student import student_router
+from api.files import files_router
 
 # 注册路由
 app.include_router(auth_router, prefix="/api/auth", tags=["认证"])
@@ -55,6 +58,9 @@ app.include_router(analytics_router, prefix="/api/analytics", tags=["数据分�
 app.include_router(pptgen_router, prefix="/api/pptgen", tags=["PPT生成"])
 app.include_router(clouds_router, prefix="/api/clouds", tags=["云存储"])
 app.include_router(manage_router, prefix="/api/manage", tags=["系统管理"])
+app.include_router(teacher_router, prefix="/api/teacher", tags=["教师功能"])
+app.include_router(student_router, prefix="/api/student", tags=["学生功能"])
+app.include_router(files_router, prefix="/api/files", tags=["文件管理"])
 
 @app.get("/")
 async def root():

@@ -39,9 +39,76 @@ api.interceptors.response.use(
 // 认证相关API
 export const authAPI = {
   login: (account_id: string, password: string) =>
-    api.post('/api/auth/login', { account_id, password }),
-  getCurrentUser: () => api.get('/api/auth/me'),
-  logout: () => api.post('/api/auth/logout'),
+    api.post('/auth/login', { account_id, password }),
+  getCurrentUser: () => api.get('/auth/me'),
+  logout: () => api.post('/auth/logout'),
+  refreshToken: () => api.post('/auth/refresh'),
+}
+
+// 教师端API
+export const teacherAPI = {
+  // 智能教学设计
+  createTeachingPlan: (data: any) => api.post('/teacher/teaching-plans', data),
+  getTeachingPlans: () => api.get('/teacher/teaching-plans'),
+  getTeachingPlan: (id: number) => api.get(`/teacher/teaching-plans/${id}`),
+
+  // AI知识图谱
+  createMindMap: (data: any) => api.post('/teacher/mindmaps', data),
+  getMindMaps: () => api.get('/teacher/mindmaps'),
+
+  // 智能出题
+  generateExam: (data: any) => api.post('/teacher/generate-exam', data),
+
+  // 学生疑问处理
+  getStudentDisputes: () => api.get('/teacher/disputes'),
+  replyToDispute: (disputeId: number, reply: string) =>
+    api.post(`/teacher/disputes/${disputeId}/reply`, { reply }),
+
+  // 视频管理
+  createVideo: (data: any) => api.post('/teacher/videos', data),
+  getVideos: () => api.get('/teacher/videos'),
+  analyzeVideo: (videoId: number) => api.post(`/teacher/videos/${videoId}/analyze`),
+}
+
+// 学生端API
+export const studentAPI = {
+  // AI学习伙伴
+  chatWithAI: (data: { question: string; ai_mode: string }) =>
+    api.post('/student/chat', data),
+  getChatHistory: (limit: number = 50) =>
+    api.get(`/student/chat/history?limit=${limit}`),
+  clearChatHistory: () => api.delete('/student/chat/history'),
+
+  // 自主练习
+  generatePracticeQuestion: (topic: string) =>
+    api.post('/student/practice/generate', { topic }),
+  submitPracticeAnswer: (data: any) =>
+    api.post('/student/practice/submit', data),
+
+  // 向老师提问
+  createDispute: (message: string) =>
+    api.post('/student/disputes', { message }),
+  getMyDisputes: () => api.get('/student/disputes'),
+
+  // 知识掌握评估
+  createKnowledgeMastery: (data: any) =>
+    api.post('/student/knowledge-mastery', data),
+  getKnowledgeMastery: () => api.get('/student/knowledge-mastery'),
+
+  // 视频学习
+  getAvailableVideos: () => api.get('/student/videos'),
+  getVideoDetail: (videoId: number) => api.get(`/student/videos/${videoId}`),
+}
+
+// 管理员端API
+export const adminAPI = {
+  // 数据分析
+  getDashboardStats: () => api.get('/analytics/dashboard'),
+  getStudentAnalytics: () => api.get('/analytics/students'),
+  getTeacherAnalytics: () => api.get('/analytics/teachers'),
+  getClassAnalytics: () => api.get('/analytics/classes'),
+  getSystemActivities: (limit: number = 20) =>
+    api.get(`/analytics/activities?limit=${limit}`),
 }
 
 // 用户管理API
@@ -229,4 +296,70 @@ export const adminAPI = {
   getActivityLogs: (params?: any) => api.get('/api/admin/activity-logs', { params }),
 }
 
-export default api 
+// 文件管理API
+export const fileAPI = {
+  // 文件上传
+  uploadFile: (file: File, fileType: string = 'any', storageType: string = 'local') => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('file_type', fileType)
+    formData.append('storage_type', storageType)
+    return api.post('/files/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+
+  uploadVideo: (file: File, storageType: string = 'local') => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('storage_type', storageType)
+    return api.post('/files/upload/video', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+
+  uploadImage: (file: File, storageType: string = 'local') => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('storage_type', storageType)
+    return api.post('/files/upload/image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+
+  uploadDocument: (file: File, storageType: string = 'local') => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('storage_type', storageType)
+    return api.post('/files/upload/document', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+
+  // 文件管理
+  getFileList: (fileType: string = 'any', limit: number = 100) =>
+    api.get(`/files/list?file_type=${fileType}&limit=${limit}`),
+
+  deleteFile: (fileType: string, filename: string) =>
+    api.delete(`/files/delete/${fileType}/${filename}`),
+
+  getFileInfo: (fileType: string, filename: string) =>
+    api.get(`/files/info/${fileType}/${filename}`),
+
+  downloadFile: (fileType: string, filename: string) =>
+    api.get(`/files/download/${fileType}/${filename}`, { responseType: 'blob' }),
+
+  // 七牛云相关
+  uploadToQiniu: (file: File, fileType: string = 'any') => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('file_type', fileType)
+    return api.post('/files/qiniu/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+
+  getQiniuUploadToken: () => api.get('/files/qiniu/token'),
+}
+
+export default api
