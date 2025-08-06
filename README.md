@@ -1,33 +1,74 @@
-# EduAGI 智能教学系统
+# 🎓 EduAGI 智能教学系统
 
-基于AI的教育管理系统，采用前后端分离架构。
+[![GitHub stars](https://img.shields.io/github/stars/ghosttT0/eduagi?style=social)](https://github.com/ghosttT0/eduagi/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/ghosttT0/eduagi?style=social)](https://github.com/ghosttT0/eduagi/network)
+[![GitHub issues](https://img.shields.io/github/issues/ghosttT0/eduagi)](https://github.com/ghosttT0/eduagi/issues)
+[![License](https://img.shields.io/github/license/ghosttT0/eduagi)](https://github.com/ghosttT0/eduagi/blob/main/LICENSE)
 
-## 系统架构
+> 🚀 **最新更新**: 已完成前后端分离架构升级！从Streamlit单体应用升级为现代化的FastAPI + React架构
 
-### 后端 (Backend)
-- **技术栈**: FastAPI + SQLAlchemy + SQLite/PostgreSQL
-- **主要功能**: 
-  - RESTful API 接口
-  - 用户认证与授权 (JWT)
-  - 数据库操作
-  - AI 视频分析 (通义千问)
-  - 文件上传与管理
+基于AI大模型的智能教学系统，为教师、学生和管理员提供全方位的智能教学支持。
 
-### 前端 (Frontend)
-- **技术栈**: React + TypeScript + Ant Design + Vite
-- **主要功能**:
-  - 响应式用户界面
-  - 角色权限管理
-  - 实时数据展示
-  - 文件上传下载
+## ✨ 核心特性
 
-## 快速开始
+### 🎯 三端完整功能
 
-### 1. 后端部署
+| 👨‍🏫 教师端 | 👨‍🎓 学生端 | 👨‍💼 管理员端 |
+|------------|------------|--------------|
+| 🧠 智能教学设计 | 🤖 AI学习伙伴 | 📊 数据智能驾驶舱 |
+| 🗺️ AI知识图谱 | 📝 自主练习反馈 | 👥 用户管理 |
+| 📋 智能出题系统 | ❓ 向老师提问 | 🏫 班级管理 |
+| 🎥 视频管理中心 | 📈 知识掌握评估 | 📈 系统监控 |
+| 💬 学生疑问处理 | 🎬 视频学习中心 | 🔧 系统配置 |
 
-#### 环境要求
+### 🔥 技术亮点
+
+- **🤖 AI驱动**: 集成通义千问大模型，提供智能内容生成
+- **🏗️ 现代架构**: FastAPI + React 前后端分离
+- **🎨 专业UI**: Ant Design 企业级界面设计
+- **🔐 权限管理**: RBAC角色权限控制系统
+- **☁️ 云存储**: 支持本地存储和七牛云存储
+- **📱 响应式**: 适配桌面端和移动端
+
+## 🏗️ 系统架构
+
+```
+EduAGI 智能教学系统
+├── 🖥️ 前端 (React + TypeScript + Ant Design)
+│   ├── 教师工作台
+│   ├── 学生学习中心
+│   └── 管理员控制台
+├── ⚡ 后端 (FastAPI + SQLAlchemy)
+│   ├── RESTful API
+│   ├── JWT认证
+│   └── 权限控制
+├── 🤖 AI服务 (通义千问集成)
+│   ├── 智能教学设计
+│   ├── 知识图谱生成
+│   ├── 智能出题
+│   └── 内容分析
+└── 💾 数据存储
+    ├── PostgreSQL/SQLite
+    └── 文件存储(本地/七牛云)
+```
+
+## 🚀 快速开始
+
+### 📋 环境要求
+
 - Python 3.8+
-- pip
+- Node.js 16+
+- npm 或 yarn
+
+### 🔧 安装部署
+
+#### 1. 克隆仓库
+```bash
+git clone https://github.com/ghosttT0/eduagi.git
+cd eduagi
+```
+
+#### 2. 后端部署
 
 #### 安装步骤
 
