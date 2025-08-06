@@ -67,12 +67,10 @@ const LoginPage: React.FC = () => {
         <div className="login-form-section">
           <div className="form-content">
             <div className="login-header">
-              <Title level={1} className="login-title">
-                We are Login
+              <Title level={2} className="login-title">
+                EduAGI 智能教学系统
               </Title>
-              <Text className="login-subtitle">
-                Welcome back! Log in to your account.
-              </Text>
+              <Text className="login-subtitle">基于AI的教育管理平台</Text>
             </div>
 
             <Form
@@ -84,11 +82,11 @@ const LoginPage: React.FC = () => {
             >
               <Form.Item
                 name="account_id"
-                rules={[{ required: true, message: '请输入手机号！' }]}
+                rules={[{ required: true, message: '请输入账号！' }]}
               >
                 <Input
-                  prefix={<PhoneOutlined className="input-icon" />}
-                  placeholder="手机号"
+                  prefix={<UserOutlined className="input-icon" />}
+                  placeholder="请输入账号"
                   autoComplete="username"
                   className="custom-input"
                 />
@@ -100,7 +98,7 @@ const LoginPage: React.FC = () => {
               >
                 <Input.Password
                   prefix={<LockOutlined className="input-icon" />}
-                  placeholder="密码"
+                  placeholder="请输入密码"
                   autoComplete="current-password"
                   className="custom-input"
                 />
