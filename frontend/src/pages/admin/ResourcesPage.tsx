@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { qiniuService } from '../../services/qiniuService'
 import {
   Table,
   Button,
@@ -54,6 +55,7 @@ interface Resource {
   downloads: number
   category: string
   status: 'active' | 'archived'
+  qiniuKey?: string // 七牛云文件key
 }
 
 interface VideoAnalysis {
@@ -180,17 +182,29 @@ const ResourcesPage: React.FC = () => {
   const loadResources = async () => {
     setLoading(true)
     try {
-      // 这里应该调用真实的API
-      // const response = await resourceAPI.getAll()
-      // setResources(response.data)
-      
-      // 使用模拟数据
-      setTimeout(() => {
-        setResources(mockResources)
-        setLoading(false)
-      }, 500)
+      // 从七牛云获取文件列表
+      const qiniuResponse = await qiniuService.listFiles()
+
+      // 转换七牛云数据格式为本地格式
+      const qiniuResources: Resource[] = qiniuResponse.items.map((file, index) => ({
+        id: index + 1,
+        name: qiniuService.getFileName(file.key),
+        type: qiniuService.getFileType(file.key),
+        size: qiniuService.formatFileSize(file.fsize),
+        uploadDate: qiniuService.formatUploadTime(file.putTime),
+        uploader: '系统管理员', // 七牛云无法获取上传者信息
+        downloads: Math.floor(Math.random() * 500), // 模拟下载次数
+        category: qiniuService.getFileDirectory(file.key) || '未分类',
+        status: 'active' as const,
+        qiniuKey: file.key // 保存七牛云key用于下载
+      }))
+
+      // 合并七牛云数据和模拟数据
+      setResources([...qiniuResources, ...mockResources])
+      setLoading(false)
     } catch (error) {
       console.error('加载资源失败:', error)
+      // 如果七牛云加载失败，使用模拟数据
       setResources(mockResources)
       setLoading(false)
     }
@@ -362,6 +376,14 @@ const ResourcesPage: React.FC = () => {
               type="link"
               icon={<EyeOutlined />}
               size="small"
+              onClick={() => {
+                if (record.qiniuKey) {
+                  const previewUrl = qiniuService.getPreviewUrl(record.qiniuKey)
+                  window.open(previewUrl, '_blank')
+                } else {
+                  message.info('该文件暂不支持预览')
+                }
+              }}
             />
           </Tooltip>
           <Tooltip title="下载">
@@ -369,6 +391,19 @@ const ResourcesPage: React.FC = () => {
               type="link"
               icon={<DownloadOutlined />}
               size="small"
+              onClick={() => {
+                if (record.qiniuKey) {
+                  const downloadUrl = qiniuService.getDownloadUrl(record.qiniuKey)
+                  const link = document.createElement('a')
+                  link.href = downloadUrl
+                  link.download = record.name
+                  document.body.appendChild(link)
+                  link.click()
+                  document.body.removeChild(link)
+                } else {
+                  message.info('该文件暂不支持下载')
+                }
+              }}
             />
           </Tooltip>
           {record.type === 'video' && (
@@ -377,14 +412,25 @@ const ResourcesPage: React.FC = () => {
                 type="link"
                 icon={<BarChartOutlined />}
                 size="small"
-                onClick={() => {
-                  const analysis = mockVideoAnalyses.find(a => 
-                    a.videoName === record.name
-                  )
-                  if (analysis) {
-                    showAnalysis(analysis)
-                  } else {
-                    message.info('该视频暂无分析数据')
+                onClick={async () => {
+                  try {
+                    let analysis = mockVideoAnalyses.find(a =>
+                      a.videoName === record.name
+                    )
+
+                    // 如果没有找到分析数据且是七牛云文件，尝试生成分析
+                    if (!analysis && record.qiniuKey) {
+                      message.loading('正在分析视频内容...', 2)
+                      analysis = await qiniuService.getVideoAnalysis(record.qiniuKey)
+                    }
+
+                    if (analysis) {
+                      showAnalysis(analysis)
+                    } else {
+                      message.info('该视频暂无分析数据')
+                    }
+                  } catch (error) {
+                    message.error('视频分析失败')
                   }
                 }}
               />

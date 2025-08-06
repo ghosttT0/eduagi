@@ -55,26 +55,26 @@ const AdvancedDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [timeRange, setTimeRange] = useState('month')
 
-  // 模拟数据
+  // EduAGI教育平台数据
   const [dashboardData, setDashboardData] = useState({
-    // 核心指标
-    totalEarning: 242650,
-    averageEarning: 17347,
-    conversionRate: 74.86,
+    // 核心教育指标
+    totalStudents: 1248,
+    activeTeachers: 89,
+    completionRate: 74.86,
     monthlyGrowth: 15.2,
-    
+
     // 用户统计
-    totalUsers: 1248,
+    totalUsers: 1337,
     activeUsers: 892,
     newUsers: 156,
     onlineUsers: 234,
-    
+
     // 学习数据
     totalCourses: 45,
     completedLessons: 1567,
     studyHours: 8934,
     aiInteractions: 2341,
-    
+
     // 系统数据
     serverLoad: 68,
     databaseSize: 2.4,
@@ -82,48 +82,48 @@ const AdvancedDashboard: React.FC = () => {
     apiCalls: 45678,
   })
 
-  // 周销售数据
+  // 周学习活跃度数据
   const weeklyData = [
-    { day: 'Sun', value: 30000, type: 'current' },
-    { day: 'Mon', value: 45000, type: 'current' },
-    { day: 'Tue', value: 38000, type: 'current' },
-    { day: 'Wed', value: 52000, type: 'current' },
-    { day: 'Thu', value: 41000, type: 'current' },
-    { day: 'Fri', value: 48000, type: 'current' },
-    { day: 'Sat', value: 35000, type: 'current' },
+    { day: 'Sun', value: 156, type: 'current' },
+    { day: 'Mon', value: 234, type: 'current' },
+    { day: 'Tue', value: 189, type: 'current' },
+    { day: 'Wed', value: 267, type: 'current' },
+    { day: 'Thu', value: 198, type: 'current' },
+    { day: 'Fri', value: 245, type: 'current' },
+    { day: 'Sat', value: 178, type: 'current' },
   ]
 
-  // 收入趋势数据
-  const incomeData = [
-    { month: 'Jun', value: 100000 },
-    { month: 'Jul', value: 120000 },
-    { month: 'Aug', value: 180000 },
-    { month: 'Sep', value: 150000 },
-    { month: 'Oct', value: 200000 },
-    { month: 'Nov', value: 170000 },
-    { month: 'Dec', value: 240000 },
+  // 学习时长趋势数据
+  const studyTimeData = [
+    { month: 'Jun', value: 1200 },
+    { month: 'Jul', value: 1450 },
+    { month: 'Aug', value: 1890 },
+    { month: 'Sep', value: 1650 },
+    { month: 'Oct', value: 2100 },
+    { month: 'Nov', value: 1980 },
+    { month: 'Dec', value: 2340 },
   ]
 
-  // 点击率数据
-  const clickData = [
-    { type: 'Clicks', value: 210 },
-    { type: 'Impressions', value: 42 },
+  // AI互动数据
+  const aiInteractionData = [
+    { type: 'AI对话', value: 2341 },
+    { type: '智能答疑', value: 1567 },
   ]
 
-  // 用户团队数据
+  // 教师团队数据
   const teamMembers = [
-    { id: 1, name: 'Mahid Ahmed', role: 'Senior Developer', avatar: '👨‍💻', status: 'online' },
-    { id: 2, name: 'Daniel Karl', role: 'UI Designer', avatar: '👨‍🎨', status: 'online' },
-    { id: 3, name: 'Rena Michel', role: 'Product Manager', avatar: '👩‍💼', status: 'away' },
-    { id: 4, name: 'Salina Metho', role: 'Data Analyst', avatar: '👩‍💻', status: 'online' },
+    { id: 1, name: '张教授', role: 'Python编程讲师', avatar: '👨‍🏫', status: 'online' },
+    { id: 2, name: '李老师', role: '前端开发导师', avatar: '👩‍💻', status: 'online' },
+    { id: 3, name: '王教授', role: 'AI算法专家', avatar: '👨‍🔬', status: 'away' },
+    { id: 4, name: '陈老师', role: '数据科学讲师', avatar: '👩‍🏫', status: 'online' },
   ]
 
   // 热门课程数据
   const topCourses = [
-    { name: 'Python基础编程', students: 234, progress: 85, revenue: 12500 },
-    { name: 'Web前端开发', students: 189, progress: 92, revenue: 15600 },
-    { name: '数据科学入门', students: 156, progress: 78, revenue: 9800 },
-    { name: '机器学习实战', students: 143, progress: 88, revenue: 18900 },
+    { name: 'Python基础编程', students: 234, progress: 85, completion: 89 },
+    { name: 'Web前端开发', students: 189, progress: 92, completion: 94 },
+    { name: '数据科学入门', students: 156, progress: 78, completion: 82 },
+    { name: '机器学习实战', students: 143, progress: 88, completion: 91 },
   ]
 
   // 活动记录
@@ -169,14 +169,14 @@ const AdvancedDashboard: React.FC = () => {
     },
     tooltip: {
       formatter: (datum: any) => {
-        return { name: 'Sales', value: `$${datum.value.toLocaleString()}` }
+        return { name: '学习人数', value: `${datum.value} 人` }
       },
     },
   }
 
-  // 收入趋势图表配置
-  const incomeConfig = {
-    data: incomeData,
+  // 学习时长趋势图表配置
+  const studyTimeConfig = {
+    data: studyTimeData,
     xField: 'month',
     yField: 'value',
     smooth: true,
@@ -186,14 +186,14 @@ const AdvancedDashboard: React.FC = () => {
     },
     tooltip: {
       formatter: (datum: any) => {
-        return { name: 'Income', value: `$${datum.value.toLocaleString()}` }
+        return { name: '学习时长', value: `${datum.value} 小时` }
       },
     },
   }
 
-  // 点击率饼图配置
-  const clickConfig = {
-    data: clickData,
+  // AI互动饼图配置
+  const aiInteractionConfig = {
+    data: aiInteractionData,
     angleField: 'value',
     colorField: 'type',
     radius: 0.8,
@@ -216,7 +216,7 @@ const AdvancedDashboard: React.FC = () => {
           overflow: 'hidden',
           textOverflow: 'ellipsis',
         },
-        content: '34.09%',
+        content: '59.9%',
       },
     },
   }
@@ -251,14 +251,13 @@ const AdvancedDashboard: React.FC = () => {
         <Col span={6}>
           <Card style={{ background: 'linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%)', border: 'none' }}>
             <Statistic
-              title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Total Earning</span>}
-              value={dashboardData.totalEarning}
+              title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>总学生数</span>}
+              value={dashboardData.totalStudents}
               precision={0}
               valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}
-              prefix="$"
               suffix={
                 <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
-                  From the running month
+                  活跃学习用户
                 </div>
               }
             />
@@ -268,14 +267,13 @@ const AdvancedDashboard: React.FC = () => {
         <Col span={6}>
           <Card style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', border: 'none' }}>
             <Statistic
-              title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Average Earning</span>}
-              value={dashboardData.averageEarning}
+              title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>活跃教师</span>}
+              value={dashboardData.activeTeachers}
               precision={0}
               valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}
-              prefix="$"
               suffix={
                 <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
-                  From the running month
+                  在线授课教师
                 </div>
               }
             />
@@ -285,14 +283,14 @@ const AdvancedDashboard: React.FC = () => {
         <Col span={6}>
           <Card style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', border: 'none' }}>
             <Statistic
-              title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>Conversion Rate</span>}
-              value={dashboardData.conversionRate}
+              title={<span style={{ color: 'rgba(255,255,255,0.8)' }}>课程完成率</span>}
+              value={dashboardData.completionRate}
               precision={2}
               valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 'bold' }}
               suffix="%"
               prefix={
                 <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
-                  +5.2% from last month
+                  本月提升 +5.2%
                 </div>
               }
             />
@@ -332,11 +330,11 @@ const AdvancedDashboard: React.FC = () => {
 
         {/* 第二行 - 图表区域 */}
         <Col span={12}>
-          <Card 
+          <Card
             title={
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Regular Sell</span>
-                <Button size="small" type="primary" ghost>Export</Button>
+                <span>每日学习活跃度</span>
+                <Button size="small" type="primary" ghost>导出数据</Button>
               </div>
             }
             style={{ height: 400 }}
@@ -346,24 +344,24 @@ const AdvancedDashboard: React.FC = () => {
         </Col>
 
         <Col span={6}>
-          <Card title="Click-Through Rate" style={{ height: 400 }}>
+          <Card title="AI互动统计" style={{ height: 400 }}>
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <Statistic
-                value={34.09}
+                value={59.9}
                 suffix="%"
                 valueStyle={{ fontSize: '24px', fontWeight: 'bold', color: '#fbbf24' }}
               />
             </div>
-            <Pie {...clickConfig} height={200} />
+            <Pie {...aiInteractionConfig} height={200} />
             <div style={{ marginTop: 16, textAlign: 'center' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontSize: '20px', fontWeight: 'bold' }}>210</div>
-                  <div style={{ fontSize: '12px', color: '#666' }}>Clicks</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold' }}>2341</div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>AI对话</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '20px', fontWeight: 'bold' }}>42</div>
-                  <div style={{ fontSize: '12px', color: '#666' }}>Impressions</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold' }}>1567</div>
+                  <div style={{ fontSize: '12px', color: '#666' }}>智能答疑</div>
                 </div>
               </div>
             </div>
@@ -371,12 +369,12 @@ const AdvancedDashboard: React.FC = () => {
         </Col>
 
         <Col span={6}>
-          <Card title="Income Statistics" extra={<Select defaultValue="Monthly" size="small" />} style={{ height: 400 }}>
-            <Area {...incomeConfig} height={250} />
+          <Card title="学习时长统计" extra={<Select defaultValue="Monthly" size="small" />} style={{ height: 400 }}>
+            <Area {...studyTimeConfig} height={250} />
             <div style={{ marginTop: 16 }}>
-              <Tag color="red" style={{ marginBottom: 8 }}>-15%</Tag>
+              <Tag color="green" style={{ marginBottom: 8 }}>+15%</Tag>
               <div style={{ fontSize: '12px', color: '#666' }}>
-                Advertising will drive +25.33% more visitors
+                AI辅助学习提升了 +25.33% 学习效率
               </div>
             </div>
           </Card>
