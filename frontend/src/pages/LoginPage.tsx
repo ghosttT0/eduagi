@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Form, Input, Button, Card, message, Typography } from 'antd'
 import { UserOutlined, LockOutlined, RobotOutlined } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 import { authAPI } from '../services/api'
 import { useAuthStore } from '../stores/authStore'
 import './LoginPage.css'
@@ -15,6 +16,7 @@ interface LoginForm {
 const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const { login } = useAuthStore()
+  const navigate = useNavigate()
 
   const onFinish = async (values: LoginForm) => {
     setLoading(true)
@@ -22,8 +24,27 @@ const LoginPage: React.FC = () => {
       const response = await authAPI.login(values.account_id, values.password)
       const { access_token, user } = response.data
       
+      // 更新认证状态
       login(user, access_token)
       message.success('登录成功！')
+      
+      // 根据用户角色跳转到对应的仪表板
+      setTimeout(() => {
+        switch (user.role) {
+          case '管理员':
+            navigate('/admin/dashboard')
+            break
+          case '教师':
+            navigate('/teacher/dashboard')
+            break
+          case '学生':
+            navigate('/student/dashboard')
+            break
+          default:
+            navigate('/teacher/dashboard')
+        }
+      }, 500) // 延迟500ms确保状态更新完成
+      
     } catch (error: any) {
       message.error(error.response?.data?.detail || '登录失败，请检查账号密码')
     } finally {
