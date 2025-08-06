@@ -115,7 +115,7 @@ async def chat_with_ai(
     mode_prompts = {
         "直接问答": f"请直接、清晰地回答以下问题：{message.question}",
         "苏格拉底式引导": f"请扮演苏格拉底，不要直接回答问题，而是通过反问来引导我思考这个问题：{message.question}",
-        "关联知识分析": f"请分析这个问题 "{message.question}" 主要涉及了哪些关联知识点，并对这些关联点进行简要说明。"
+        "关联知识分析": f"请分析这个问题 '{message.question}' 主要涉及了哪些关联知识点，并对这些关联点进行简要说明。"
     }
     
     # 调用AI服务生成回答
