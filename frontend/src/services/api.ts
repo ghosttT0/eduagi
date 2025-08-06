@@ -211,8 +211,8 @@ export const manageAPI = {
     api.post('/api/manage/restore', { backup_id }),
 }
 
-// 教师相关API
-export const teacherAPI = {
+// 旧版API（保留兼容性）
+export const teacherAPILegacy = {
   // 教学计划
   getTeachingPlans: () => api.get('/api/teacher/teaching-plans'),
   createTeachingPlan: (data: any) => api.post('/api/teacher/teaching-plans', data),
@@ -247,8 +247,8 @@ export const teacherAPI = {
   deleteCourse: (id: number) => api.delete(`/api/teacher/courses/${id}`),
 }
 
-// 学生相关API
-export const studentAPI = {
+// 旧版学生API（保留兼容性）
+export const studentAPILegacy = {
   // 学习记录
   getLearningHistory: () => api.get('/api/student/learning-history'),
   createLearningRecord: (data: any) => api.post('/api/student/learning-records', data),
@@ -275,8 +275,8 @@ export const studentAPI = {
   updateKnowledgeMastery: (data: any) => api.post('/api/student/knowledge-mastery', data),
 }
 
-// 管理员相关API
-export const adminAPI = {
+// 旧版管理员API（保留兼容性）
+export const adminAPILegacy = {
   // 用户管理
   getUsers: (params?: any) => api.get('/api/admin/users', { params }),
   createUser: (data: any) => api.post('/api/admin/users', data),
