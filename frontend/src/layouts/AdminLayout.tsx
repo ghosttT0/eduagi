@@ -71,11 +71,7 @@ const AdminLayout: React.FC = () => {
       icon: <FileTextOutlined />,
       label: '资源管理',
     },
-    {
-      key: '/admin/videos',
-      icon: <VideoCameraOutlined />,
-      label: '视频分析',
-    },
+
     {
       key: '/admin/analytics',
       icon: <BarChartOutlined />,

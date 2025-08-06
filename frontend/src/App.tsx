@@ -8,10 +8,10 @@ import TeacherLayout from './layouts/TeacherLayout'
 import StudentLayout from './layouts/StudentLayout'
 import TeacherDashboardPage from './pages/teacher/DashboardPage'
 import StudentDashboardPage from './pages/student/DashboardPage'
-import AdminDashboardPage from './pages/admin/DashboardPage'
+import AdvancedDashboard from './pages/admin/AdvancedDashboard'
 import UsersPage from './pages/admin/UsersPage'
 import ClassesPage from './pages/admin/ClassesPage'
-import VideosPage from './pages/admin/VideosPage'
+import ResourcesPage from './pages/admin/ResourcesPage'
 import TeachingPlanPage from './pages/teacher/TeachingPlanPage'
 import MindMapPage from './pages/teacher/MindMapPage'
 import ExamGeneratorPage from './pages/teacher/ExamGeneratorPage'
@@ -79,7 +79,7 @@ function App() {
           <Route path="teaching-plans" element={<TeachingPlanPage />} />
           <Route path="mindmaps" element={<MindMapPage />} />
           <Route path="exam-generator" element={<ExamGeneratorPage />} />
-          <Route path="videos" element={<VideosPage />} />
+          <Route path="resources" element={<ResourcesPage />} />
           <Route path="settings" element={<div>个人设置页面</div>} />
         </Route>
 
@@ -113,10 +113,10 @@ function App() {
           }
         >
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboardPage />} />
+          <Route path="dashboard" element={<AdvancedDashboard />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="classes" element={<ClassesPage />} />
-          <Route path="videos" element={<VideosPage />} />
+          <Route path="resources" element={<ResourcesPage />} />
           <Route path="settings" element={<div>系统设置页面</div>} />
         </Route>
 
