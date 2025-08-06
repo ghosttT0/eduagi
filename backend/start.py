@@ -31,7 +31,7 @@ if __name__ == "__main__":
     
     # 获取配置
     host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", "8000"))
+    port = int(os.getenv("PORT", "8001"))
     reload = os.getenv("RELOAD", "true").lower() == "true"
     
     print(f"🚀 启动 EduAGI 后端服务...")

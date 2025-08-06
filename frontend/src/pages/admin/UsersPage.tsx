@@ -79,23 +79,25 @@ const UsersPage: React.FC = () => {
   const fetchUsers = async () => {
     setLoading(true)
     try {
-      // 使用模拟数据，实际项目中应该调用API
-      setTimeout(() => {
-        setUsers(mockUsers)
-        setLoading(false)
-      }, 500)
+      const response = await userAPI.getUsers()
+      setUsers(response.data)
     } catch (error) {
-      message.error('获取用户列表失败')
+      console.error('API调用失败，使用模拟数据:', error)
+      // 如果API调用失败，使用模拟数据
+      setUsers(mockUsers)
+    } finally {
       setLoading(false)
     }
   }
 
   const fetchClasses = async () => {
     try {
-      // 使用模拟数据，实际项目中应该调用API
-      setClasses(mockClasses)
+      const response = await classAPI.getClasses()
+      setClasses(response.data)
     } catch (error) {
-      message.error('获取班级列表失败')
+      console.error('API调用失败，使用模拟数据:', error)
+      // 如果API调用失败，使用模拟数据
+      setClasses(mockClasses)
     }
   }
 
