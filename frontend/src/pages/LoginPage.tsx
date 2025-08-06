@@ -54,80 +54,89 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="login-container">
-      <Card className="login-main-card">
-        {/* 左侧图片栏 */}
-        <div className="login-image-section">
-          <div className="login-logo-wrapper">
-            <div className="logo-circle">L</div>
+      <div className="login-card">
+        {/* 左侧插画区域 */}
+        <div className="login-illustration">
+          <div className="welcome-text">Welcome</div>
+          <div className="illustration-content">
+            {/* 这里可以放置SVG插画或图片 */}
+            <div className="character-left">👨‍💼</div>
+            <div className="character-right">👩‍💼</div>
+            <div className="decorative-elements">
+              <div className="circle blue"></div>
+              <div className="circle pink"></div>
+              <div className="leaf leaf-1">🍃</div>
+              <div className="leaf leaf-2">🍃</div>
+            </div>
           </div>
-          <div className="image-overlay"></div>
         </div>
 
-        {/* 右侧表单栏 */}
-        <div className="login-form-section">
-          <div className="form-content">
-            <div className="login-header">
-              <Title level={2} className="login-title">
-                EduAGI 智能教学系统
-              </Title>
-              <Text className="login-subtitle">基于AI的教育管理平台</Text>
-            </div>
+        {/* 右侧登录表单 */}
+        <div className="login-form-area">
+          <div className="form-header">
+            <h2 className="form-title">EduAGI 智能教学系统</h2>
+            <p className="form-subtitle">基于AI的教育管理平台</p>
+          </div>
 
-            <Form
-              name="login"
-              onFinish={onFinish}
-              autoComplete="off"
-              size="large"
-              className="login-form"
+          <Form
+            name="login"
+            onFinish={onFinish}
+            autoComplete="off"
+            className="login-form"
+          >
+            <Form.Item
+              name="account_id"
+              rules={[{ required: true, message: '请输入账号！' }]}
             >
-              <Form.Item
-                name="account_id"
-                rules={[{ required: true, message: '请输入账号！' }]}
-              >
-                <Input
-                  prefix={<UserOutlined className="input-icon" />}
-                  placeholder="请输入账号"
-                  autoComplete="username"
-                  className="custom-input"
-                />
-              </Form.Item>
+              <Input
+                placeholder="请输入账号"
+                autoComplete="username"
+                className="form-input"
+              />
+            </Form.Item>
 
-              <Form.Item
-                name="password"
-                rules={[{ required: true, message: '请输入密码！' }]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined className="input-icon" />}
-                  placeholder="请输入密码"
-                  autoComplete="current-password"
-                  className="custom-input"
-                />
-              </Form.Item>
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: '请输入密码！' }]}
+            >
+              <Input.Password
+                placeholder="请输入密码"
+                autoComplete="current-password"
+                className="form-input"
+              />
+            </Form.Item>
 
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                  block
-                  className="login-button"
-                >
-                  登录
-                </Button>
-              </Form.Item>
-            </Form>
-
-            <div className="login-tips">
-              <Text className="tips-text">
-                <strong>测试账号：</strong><br />
-                管理员：admin / admin123<br />
-                教师：T001 / teacher123<br />
-                学生：S001 / student123
-              </Text>
+            <div className="form-options">
+              <label className="remember-me">
+                <input type="checkbox" />
+                <span>记住我</span>
+              </label>
+              <a href="#" className="forgot-password">忘记密码？</a>
             </div>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                block
+                className="login-btn"
+              >
+                登录
+              </Button>
+            </Form.Item>
+          </Form>
+
+          <div className="login-tips">
+            <Text className="tips-text">
+              <strong>测试账号：</strong><br />
+              管理员：admin / admin123<br />
+              教师：T001 / teacher123<br />
+              学生：S001 / student123
+            </Text>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
