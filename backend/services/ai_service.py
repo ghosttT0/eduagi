@@ -202,95 +202,206 @@ class AIService:
         return response.content
 
     async def generate_practice_question(self, topic: str) -> Dict[str, str]:
-        """生成练习题 - 根据新逻辑实现"""
+        """生成练习题 - 健壮的智能解析逻辑"""
 
+        # 改进的Prompt：更明确的指令
         prompt = f"""
-你是一位出题专家。请根据知识点"{topic}"，生成一道相关的简答题。
-你的回复必须是一个单一的JSON对象，包含 "question_text" (题目) 和 "standard_answer" (标准答案) 两个键。
-不要包含任何额外的解释。
+你是一位出题专家。请根据知识点"{topic}"生成一道练习题。
+
+要求：
+1. 题目应具有思考性，能够检验学生对该知识点的理解
+2. 标准答案要详细且准确
+3. 回复格式必须严格按照以下JSON格式：
+
+{{
+    "question_text": "这里是题目内容",
+    "standard_answer": "这里是详细的标准答案"
+}}
+
+请直接返回JSON，不要包含任何其他文字。
 """
 
         response = await self.call_deepseek_api(prompt)
         result_text = response.content.strip()
 
-        # 改进的JSON解析逻辑
+        # 多层降级的智能解析逻辑
         json_data = None
 
-        # 方法1: 直接解析
+        # 第一层：直接JSON解析
         try:
             json_data = json.loads(result_text)
-        except:
+            if self._validate_question_json(json_data):
+                return self._clean_question_data(json_data, topic)
+        except json.JSONDecodeError:
             pass
 
-        # 方法2: 提取大括号内容并清理
+        # 第二层：提取代码块中的JSON
         if not json_data:
-            match = re.search(r'\{.*?\}', result_text, re.DOTALL)
-            if match:
+            code_block_patterns = [
+                r'```json\s*({.*?})\s*```',
+                r'```\s*({.*?})\s*```',
+                r'`({.*?})`'
+            ]
+
+            for pattern in code_block_patterns:
+                match = re.search(pattern, result_text, re.DOTALL | re.IGNORECASE)
+                if match:
+                    try:
+                        json_str = match.group(1).strip()
+                        json_data = json.loads(json_str)
+                        if self._validate_question_json(json_data):
+                            return self._clean_question_data(json_data, topic)
+                    except:
+                        continue
+
+        # 第三层：查找任何大括号包裹的内容
+        if not json_data:
+            brace_matches = re.findall(r'{[^{}]*}', result_text, re.DOTALL)
+            for match in brace_matches:
                 try:
-                    json_str = match.group(0)
-                    # 清理常见问题
-                    json_str = json_str.replace('\n', ' ').replace('\r', ' ')
-                    json_str = re.sub(r'\s+', ' ', json_str)
-                    json_str = json_str.replace("'", '"')  # 单引号改双引号
+                    # 清理和标准化JSON字符串
+                    json_str = self._normalize_json_string(match)
                     json_data = json.loads(json_str)
+                    if self._validate_question_json(json_data):
+                        return self._clean_question_data(json_data, topic)
                 except:
-                    pass
+                    continue
 
-        # 方法3: 手动提取题目和答案
+        # 第四层：关键词提取
         if not json_data:
-            question_match = re.search(r'题目[：:]\s*(.+?)(?=答案|$)', result_text, re.DOTALL | re.IGNORECASE)
-            answer_match = re.search(r'答案[：:]\s*(.+)', result_text, re.DOTALL | re.IGNORECASE)
+            question_patterns = [
+                r'题目[：:：]\s*[""""]?([^"""\n]+)[""""]?',
+                r'question_text[：:：\s]*[""""]?([^"""\n]+)[""""]?',
+                r'问题[：:：]\s*[""""]?([^"""\n]+)[""""]?'
+            ]
 
-            if question_match and answer_match:
+            answer_patterns = [
+                r'答案[：:：]\s*[""""]?([^"""\n]+)[""""]?',
+                r'standard_answer[：:：\s]*[""""]?([^"""\n]+)[""""]?',
+                r'标准答案[：:：]\s*[""""]?([^"""\n]+)[""""]?'
+            ]
+
+            question_text = self._extract_with_patterns(result_text, question_patterns)
+            answer_text = self._extract_with_patterns(result_text, answer_patterns)
+
+            if question_text and answer_text:
                 json_data = {
-                    "question_text": question_match.group(1).strip(),
-                    "standard_answer": answer_match.group(1).strip()
+                    "question_text": question_text,
+                    "standard_answer": answer_text
                 }
+                return self._clean_question_data(json_data, topic)
 
-        # 方法4: 默认题目（最后备选）
-        if not json_data:
-            json_data = {
-                "question_text": f"请详细解释{topic}的核心概念、原理和应用场景。",
-                "standard_answer": f"{topic}是一个重要的概念。请从定义、原理、特点、应用场景等方面进行详细阐述。"
-            }
+        # 第五层：最后的默认题目
+        return self._create_default_question(topic)
 
-        # 最终验证和处理
-        if json_data:
-            # 确保必要字段存在，如果不存在则补充
-            if "question_text" not in json_data:
-                json_data["question_text"] = f"请详细解释{topic}的核心概念和应用。"
-            if "standard_answer" not in json_data:
-                json_data["standard_answer"] = f"{topic}是一个重要概念，需要深入理解。"
+    def _validate_question_json(self, data: Dict) -> bool:
+        """验证题目JSON的有效性"""
+        if not isinstance(data, dict):
+            return False
 
-            # 清理字段内容
-            json_data["question_text"] = str(json_data["question_text"]).strip()
-            json_data["standard_answer"] = str(json_data["standard_answer"]).strip()
+        required_keys = ["question_text", "standard_answer"]
+        return all(key in data and isinstance(data[key], str) and data[key].strip() for key in required_keys)
 
-            # 确保内容不为空
-            if not json_data["question_text"]:
-                json_data["question_text"] = f"请解释{topic}的相关概念。"
-            if not json_data["standard_answer"]:
-                json_data["standard_answer"] = f"这是关于{topic}的重要知识点。"
+    def _normalize_json_string(self, json_str: str) -> str:
+        """标准化JSON字符串"""
+        # 移除多余的空白字符
+        json_str = re.sub(r'\s+', ' ', json_str.strip())
 
-            return json_data
-        else:
-            # 如果所有方法都失败，创建一个基本的默认题目
-            return {
-                "question_text": f"请详细说明{topic}的定义、特点和应用场景。",
-                "standard_answer": f"{topic}的定义：[请根据具体内容填写]\n特点：[请列举主要特点]\n应用场景：[请说明实际应用]"
-            }
+        # 处理单引号
+        json_str = json_str.replace("'", '"')
+
+        # 处理可能的换行符问题
+        json_str = json_str.replace('\n', ' ').replace('\r', ' ')
+
+        # 修复可能的键值对格式问题
+        json_str = re.sub(r'(\w+)\s*:', r'"\1":', json_str)
+
+        return json_str
+
+    def _extract_with_patterns(self, text: str, patterns: List[str]) -> Optional[str]:
+        """使用模式列表提取内容"""
+        for pattern in patterns:
+            match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+            if match:
+                content = match.group(1).strip()
+                if content:
+                    return content
+        return None
+
+    def _clean_question_data(self, data: Dict, topic: str) -> Dict[str, str]:
+        """清理和验证题目数据"""
+        question_text = str(data.get("question_text", "")).strip()
+        standard_answer = str(data.get("standard_answer", "")).strip()
+
+        # 确保内容不为空
+        if not question_text:
+            question_text = f"请详细解释{topic}的核心概念和应用场景。"
+
+        if not standard_answer:
+            standard_answer = f"{topic}是一个重要的概念，需要从多个角度进行理解和掌握。"
+
+        return {
+            "question_text": question_text,
+            "standard_answer": standard_answer
+        }
+
+    def _create_default_question(self, topic: str) -> Dict[str, str]:
+        """创建默认题目"""
+        return {
+            "question_text": f"请详细阐述{topic}的核心概念、主要特点和实际应用场景。",
+            "standard_answer": f"""关于{topic}：
+
+1. **核心概念**：{topic}是[在此领域中的基本定义和核心思想]
+
+2. **主要特点**：
+   - 特点一：[具体描述]
+   - 特点二：[具体描述]
+   - 特点三：[具体描述]
+
+3. **实际应用**：
+   - 应用场景一：[具体说明]
+   - 应用场景二：[具体说明]
+
+4. **学习要点**：建议重点理解其原理，并通过实践加深认识。"""
+        }
 
     async def evaluate_practice_answer(self, question: str, standard_answer: str,
                                      student_answer: str, topic: str = "") -> str:
-        """评估练习答案 - 恢复以前详细的教学反馈格式"""
+        """评估练习答案 - 提供详细的教学反馈"""
 
         prompt = f"""
-你是一位教学助手。请对比标准答案和学生的回答，并提供一份内容饱满、富有建设性的反馈。
-- 考察知识点: "{topic if topic else '未知'}"
-- 题目是: "{question}"
-- 标准答案是: "{standard_answer}"
-- 学生的回答是: "{student_answer}"
-你的反馈应首先指出学生回答的亮点，然后点明不足之处或可以改进的地方，最后进行总结并给出你觉得可以的评分(10分为满分）。
+你是一位经验丰富的教学助手和智能导师。请对比标准答案和学生的回答，并提供一份内容饱满、富有建设性的详细反馈。
+
+**练习信息：**
+- 考察知识点：{topic if topic else "综合知识"}
+- 题目：{question}
+- 标准答案：{standard_answer}
+- 学生回答：{student_answer}
+
+**反馈要求：**
+请按照以下结构提供详细的教学反馈：
+
+1. **回答亮点分析**：首先指出学生回答中的优秀之处、正确理解的部分，给予积极鼓励
+
+2. **知识掌握评估**：分析学生对该知识点的理解程度，是否抓住了核心概念
+
+3. **不足之处指正**：具体指出回答中的错误、遗漏或不够准确的地方
+
+4. **改进建议**：提供具体的学习建议，告诉学生如何提高和完善答案
+
+5. **知识拓展**：补充相关的重要知识点，帮助学生建立更完整的知识体系
+
+6. **学习指导**：给出后续学习的方向和建议
+
+7. **综合评分**：给出1-10分的评分（10分为满分），并详细说明评分理由
+
+**注意事项：**
+- 语言要温和鼓励，既要指出问题也要给予肯定
+- 反馈要具体详细，避免空泛的评价
+- 要有教育价值，真正帮助学生提高
+- 评分要公正合理，有明确的评分依据
+
+请开始你的详细反馈：
 """
 
         response = await self.call_deepseek_api(prompt)
