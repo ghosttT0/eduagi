@@ -223,7 +223,8 @@ async def submit_practice_answer(
     feedback_text = await ai_service.evaluate_practice_answer(
         question=question_data.question_text,
         standard_answer=question_data.standard_answer,
-        student_answer=answer.student_answer
+        student_answer=answer.student_answer,
+        topic=getattr(question_data, 'topic', '')
     )
     
     return PracticeFeedback(feedback=feedback_text, score=8)
