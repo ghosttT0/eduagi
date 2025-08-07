@@ -19,7 +19,7 @@ import SettingsPage from './pages/admin/SettingsPage'
 import TeachingPlanPage from './pages/teacher/TeachingPlanPage'
 import MindMapPage from './pages/teacher/MindMapPage'
 import ExamGeneratorPage from './pages/teacher/ExamGeneratorPage'
-import AIPartnerPage from './pages/student/AIPartnerPage'
+import NotesPage from './pages/student/NotesPage'
 import PracticePage from './pages/student/PracticePage'
 import './App.css'
 import './styles/global.css'
@@ -98,7 +98,7 @@ function App() {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<StudentDashboardPage />} />
-          <Route path="ai-partner" element={<AIPartnerPage />} />
+          <Route path="notes" element={<NotesPage />} />
           <Route path="practice" element={<PracticePage />} />
           <Route path="study-plan" element={<StudyPlanPage />} />
           <Route path="videos" element={<div>视频学习页面</div>} />

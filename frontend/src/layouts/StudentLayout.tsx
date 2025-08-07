@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Layout, Menu, Button, Avatar, Dropdown, message } from 'antd'
 import {
   DashboardOutlined,
-  RobotOutlined,
+  FileTextOutlined,
   EditOutlined,
   VideoCameraOutlined,
   QuestionCircleOutlined,
@@ -31,9 +31,9 @@ const StudentLayout: React.FC = () => {
       label: '学习中心',
     },
     {
-      key: '/student/ai-partner',
-      icon: <RobotOutlined />,
-      label: 'AI学习伙伴',
+      key: '/student/notes',
+      icon: <FileTextOutlined />,
+      label: '我的笔记',
     },
     {
       key: '/student/practice',

@@ -416,27 +416,36 @@ class AIService:
                 "standard_answer": f"{topic}是一个重要的概念，其核心在于..."
             }
     
-    async def evaluate_practice_answer(self, question: str, standard_answer: str, 
+    async def evaluate_practice_answer(self, question: str, standard_answer: str,
                                      student_answer: str) -> str:
-        """评估练习答案"""
-        
+        """评估练习答案 - 使用详细的教学反馈格式"""
+
         prompt = f"""
-请评估学生的练习答案：
+你是一位资深的教学专家，请为以下练习题进行详细的批改分析。
 
 题目：{question}
 标准答案：{standard_answer}
 学生答案：{student_answer}
 
-请从以下方面进行评估：
-1. 答案的正确性
-2. 理解的深度
-3. 表达的清晰度
-4. 改进建议
-5. 评分（1-10分）
+请按照以下格式提供详细的教学反馈（至少150字）：
 
-请提供详细的反馈。
+**智能导学评语：**
+
+1. **答案分析：** 学生的回答基础理解是否正确，回答了哪些要点，遗漏了哪些关键内容。
+
+2. **知识掌握评估：** 从学生的回答中可以看出对该知识点的掌握程度如何，理解是否深入。
+
+3. **正确答案解析：** 详细解释标准答案的核心要点，帮助学生理解正确的思路和方法。
+
+4. **改进建议：** 针对学生答案中的不足，提供具体的学习建议和改进方向。
+
+5. **知识拓展：** 相关的知识点补充和学习资源推荐。
+
+6. **评分：** 给出1-10分的评分，并说明评分理由。
+
+请确保反馈具有教育价值，能够真正帮助学生提高学习效果。
 """
-        
+
         response = await self.call_qwen_api(prompt)
         return response.content
 
