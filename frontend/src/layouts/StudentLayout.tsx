@@ -72,23 +72,35 @@ const StudentLayout: React.FC = () => {
     navigate('/login')
   }
 
-  const userMenu = (
-    <Menu>
-      <Menu.Item key="profile" icon={<SettingOutlined />}>
-        个人资料
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
-        退出登录
-      </Menu.Item>
-    </Menu>
-  )
+  const userMenuItems = [
+    {
+      key: 'profile',
+      icon: <SettingOutlined />,
+      label: '个人资料',
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: '退出登录',
+      onClick: handleLogout,
+    },
+  ]
 
   return (
     <Layout className="student-layout">
       <Sider trigger={null} collapsible collapsed={collapsed}>
         <div className="logo">
-          <h2>{collapsed ? 'EA' : 'EduAGI'}</h2>
+          <h2 style={{ color: '#fff', margin: 0, textAlign: 'center' }}>
+            {collapsed ? '🎓' : '🎓 EduAGI'}
+          </h2>
+          {!collapsed && (
+            <p style={{ color: '#999', fontSize: '12px', textAlign: 'center', margin: '4px 0 0 0' }}>
+              智能学习平台
+            </p>
+          )}
         </div>
         <Menu
           theme="dark"
@@ -108,10 +120,19 @@ const StudentLayout: React.FC = () => {
           />
           <div className="header-right">
             <span className="welcome-text">
-              欢迎，{user?.display_name} 同学
+              🎓 欢迎回来，{user?.display_name || '同学'}！
             </span>
-            <Dropdown overlay={userMenu} placement="bottomRight">
-              <Avatar icon={<SettingOutlined />} />
+            <span style={{ marginLeft: 16, color: '#666', fontSize: '14px' }}>
+              📚 EduAGI智能学习平台
+            </span>
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <Avatar
+                style={{
+                  backgroundColor: '#1890ff',
+                  marginLeft: 16
+                }}
+                icon={<SettingOutlined />}
+              />
             </Dropdown>
           </div>
         </Header>
