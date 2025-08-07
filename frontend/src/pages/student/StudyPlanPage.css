@@ -1,0 +1,314 @@
+/* 学习计划页面样式 */
+.study-plan-page {
+  padding: 24px;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* 日历容器样式 */
+.rbc-calendar {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* 日历头部样式 */
+.rbc-header {
+  background: #f8f9ff;
+  color: #7B68EE;
+  font-weight: 600;
+  padding: 12px 8px;
+  border-bottom: 1px solid #e8e9ff;
+}
+
+/* 日历事件样式 */
+.rbc-event {
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rbc-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 今天的日期高亮 */
+.rbc-today {
+  background-color: #f0f2ff;
+  border: 2px solid #7B68EE;
+}
+
+/* 工具栏样式 */
+.rbc-toolbar {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f8f9ff;
+  border-radius: 8px;
+  border: 1px solid #e8e9ff;
+}
+
+.rbc-toolbar button {
+  background: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin: 0 2px;
+  color: #666;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.rbc-toolbar button:hover {
+  border-color: #7B68EE;
+  color: #7B68EE;
+}
+
+.rbc-toolbar button.rbc-active {
+  background: #7B68EE;
+  border-color: #7B68EE;
+  color: white;
+}
+
+/* 学习计划卡片样式 */
+.study-plan-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.study-plan-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(123, 104, 238, 0.15);
+}
+
+/* 进度条样式 */
+.study-progress {
+  margin-top: 8px;
+}
+
+.study-progress .ant-progress-bg {
+  background: linear-gradient(135deg, #7B68EE 0%, #9F7AEA 100%);
+}
+
+/* Modal样式增强 */
+.ai-plan-modal .ant-modal-header {
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+  border-bottom: 1px solid #e8e9ff;
+}
+
+.ai-plan-modal .ant-modal-title {
+  color: #7B68EE;
+  font-weight: 600;
+}
+
+/* 表单样式 */
+.study-form .ant-form-item-label > label {
+  font-weight: 600;
+  color: #2c2c2c;
+}
+
+.study-form .ant-input,
+.study-form .ant-select-selector {
+  border-radius: 8px;
+  border: 1px solid #e8e9ff;
+  transition: all 0.2s ease;
+}
+
+.study-form .ant-input:focus,
+.study-form .ant-select-focused .ant-select-selector {
+  border-color: #7B68EE;
+  box-shadow: 0 0 0 2px rgba(123, 104, 238, 0.1);
+}
+
+/* 标签样式 */
+.difficulty-tag {
+  border-radius: 12px;
+  font-size: 11px;
+  padding: 2px 8px;
+}
+
+/* 加载状态样式 */
+.ai-generating {
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8f9ff;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.ai-generating .ant-spin {
+  color: #7B68EE;
+}
+
+/* 快捷操作栏样式 */
+.quick-actions {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
+}
+
+.quick-actions .ant-btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.quick-actions .ant-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 事件类型颜色 */
+.event-study {
+  background-color: #52c41a !important;
+}
+
+.event-exam {
+  background-color: #ff4d4f !important;
+}
+
+.event-assignment {
+  background-color: #faad14 !important;
+}
+
+.event-review {
+  background-color: #722ed1 !important;
+}
+
+.event-completed {
+  background-color: #d9d9d9 !important;
+  opacity: 0.6;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .study-plan-page {
+    padding: 16px;
+  }
+  
+  .rbc-calendar {
+    padding: 8px;
+  }
+  
+  .rbc-toolbar {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .rbc-toolbar-label {
+    margin: 8px 0;
+  }
+  
+  .quick-actions {
+    padding: 16px;
+  }
+  
+  .quick-actions .ant-space {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 日历视图特定样式 */
+.rbc-month-view {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.rbc-date-cell {
+  padding: 8px;
+  min-height: 40px;
+}
+
+.rbc-date-cell.rbc-off-range {
+  color: #bfbfbf;
+}
+
+.rbc-date-cell.rbc-now {
+  background-color: #f0f2ff;
+  font-weight: bold;
+  color: #7B68EE;
+}
+
+/* 事件详情样式 */
+.event-details {
+  padding: 16px;
+  background: #f8f9ff;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.event-details .event-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin-bottom: 8px;
+}
+
+.event-details .event-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #666;
+}
+
+.event-details .event-description {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #7B68EE;
+  margin-top: 12px;
+}
+
+/* 学习统计样式 */
+.study-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.study-stats .ant-statistic {
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.study-stats .ant-statistic:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* 计划目标列表样式 */
+.plan-goals {
+  margin-top: 12px;
+}
+
+.plan-goals .ant-tag {
+  margin-bottom: 4px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+/* AI助手提示样式 */
+.ai-assistant-tip {
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+  border: 1px solid #e8e9ff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.ai-assistant-tip .ant-alert-icon {
+  color: #7B68EE;
+}

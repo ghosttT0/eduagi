@@ -12,13 +12,15 @@ export default defineConfig({
   },
   server: {
     port: 3001,
-    // 移除代理配置，使用环境变量中的API URL
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://localhost:8000',
-    //     changeOrigin: true,
-    //   },
-    // },
+    // 添加代理配置解决CORS问题
+    proxy: {
+      '/api': {
+        target: 'https://eduagi-fullstack.zeabur.app',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api'),
+      },
+    },
   },
   build: {
     outDir: 'dist',

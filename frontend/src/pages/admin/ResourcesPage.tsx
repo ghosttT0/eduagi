@@ -29,6 +29,7 @@ import {
   DeleteOutlined,
   UploadOutlined,
   FileOutlined,
+  FileTextOutlined,
   VideoCameraOutlined,
   FileImageOutlined,
   FilePdfOutlined,
@@ -80,62 +81,142 @@ const ResourcesPage: React.FC = () => {
   const [form] = Form.useForm()
   const [searchText, setSearchText] = useState('')
   const [selectedType, setSelectedType] = useState<string>('')
+  const [videoUrlModalVisible, setVideoUrlModalVisible] = useState(false)
+  const [videoUrlForm] = Form.useForm()
+  const [videoAnalyzing, setVideoAnalyzing] = useState(false)
 
   // 模拟资源数据
   const mockResources: Resource[] = [
     {
       id: 1,
-      name: 'Python基础教程.mp4',
+      name: '小学数学基础教学视频.mp4',
       type: 'video',
       size: '256.8 MB',
       uploadDate: '2024-08-01',
-      uploader: '张教授',
+      uploader: '张老师',
       downloads: 156,
-      category: '编程教学',
+      category: '数学教学',
       status: 'active'
     },
     {
       id: 2,
-      name: '数据结构课件.pdf',
-      type: 'document',
+      name: '语文阅读理解课件.pptx',
+      type: 'ppt',
       size: '12.3 MB',
       uploadDate: '2024-08-02',
       uploader: '李老师',
       downloads: 89,
-      category: '课程资料',
+      category: '语文教学',
       status: 'active'
     },
     {
       id: 3,
-      name: 'Web开发实战.mp4',
+      name: '英语口语练习教学视频.mp4',
       type: 'video',
       size: '445.2 MB',
       uploadDate: '2024-08-03',
-      uploader: '王教授',
+      uploader: '王老师',
       downloads: 234,
-      category: '前端开发',
+      category: '英语教学',
       status: 'active'
     },
     {
       id: 4,
-      name: '算法分析图表.png',
+      name: '科学实验图解.png',
       type: 'image',
       size: '2.1 MB',
       uploadDate: '2024-08-04',
       uploader: '刘老师',
       downloads: 67,
-      category: '教学图表',
+      category: '科学教学',
       status: 'active'
     },
     {
       id: 5,
-      name: '机器学习讲座.mp4',
-      type: 'video',
-      size: '678.9 MB',
+      name: '历史知识点总结.docx',
+      type: 'word',
+      size: '8.9 MB',
       uploadDate: '2024-08-05',
-      uploader: '陈教授',
+      uploader: '陈老师',
       downloads: 312,
-      category: 'AI教学',
+      category: '历史教学',
+      status: 'active'
+    },
+    {
+      id: 6,
+      name: '数学期末考试试卷.pdf',
+      type: 'exam',
+      size: '2.3 MB',
+      uploadDate: '2024-08-06',
+      uploader: '张老师',
+      downloads: 198,
+      category: '考试试卷',
+      status: 'active'
+    },
+    {
+      id: 7,
+      name: '语文教学计划.docx',
+      type: 'word',
+      size: '5.8 MB',
+      uploadDate: '2024-08-07',
+      uploader: '李老师',
+      downloads: 145,
+      category: '教学计划',
+      status: 'active'
+    },
+    {
+      id: 8,
+      name: '英语语法教学PPT.pptx',
+      type: 'ppt',
+      size: '18.4 MB',
+      uploadDate: '2024-08-08',
+      uploader: '王老师',
+      downloads: 176,
+      category: '英语教学',
+      status: 'active'
+    },
+    {
+      id: 9,
+      name: '科学实验教学视频.mp4',
+      type: 'video',
+      size: '342.1 MB',
+      uploadDate: '2024-08-09',
+      uploader: '刘老师',
+      downloads: 276,
+      category: '科学教学',
+      status: 'active'
+    },
+    {
+      id: 10,
+      name: '历史单元测试.pdf',
+      type: 'exam',
+      size: '1.9 MB',
+      uploadDate: '2024-08-10',
+      uploader: '陈老师',
+      downloads: 187,
+      category: '考试试卷',
+      status: 'active'
+    },
+    {
+      id: 11,
+      name: '美术创作教学课件.pptx',
+      type: 'ppt',
+      size: '25.6 MB',
+      uploadDate: '2024-08-11',
+      uploader: '赵老师',
+      downloads: 98,
+      category: '美术教学',
+      status: 'active'
+    },
+    {
+      id: 12,
+      name: '音乐欣赏教学计划.docx',
+      type: 'word',
+      size: '4.2 MB',
+      uploadDate: '2024-08-12',
+      uploader: '周老师',
+      downloads: 76,
+      category: '音乐教学',
       status: 'active'
     }
   ]
@@ -187,7 +268,7 @@ const ResourcesPage: React.FC = () => {
 
       // 转换七牛云数据格式为本地格式
       const qiniuResources: Resource[] = qiniuResponse.items.map((file, index) => ({
-        id: index + 1,
+        id: index + 1000, // 使用1000+的ID避免与模拟数据冲突
         name: qiniuService.getFileName(file.key),
         type: qiniuService.getFileType(file.key),
         size: qiniuService.formatFileSize(file.fsize),
@@ -199,13 +280,23 @@ const ResourcesPage: React.FC = () => {
         qiniuKey: file.key // 保存七牛云key用于下载
       }))
 
+      // 确保ID唯一性，给模拟数据重新分配ID
+      const uniqueMockResources = mockResources.map((resource, index) => ({
+        ...resource,
+        id: index + 2000 // 使用2000+的ID确保唯一性
+      }))
+
       // 合并七牛云数据和模拟数据
-      setResources([...qiniuResources, ...mockResources])
+      setResources([...qiniuResources, ...uniqueMockResources])
       setLoading(false)
     } catch (error) {
       console.error('加载资源失败:', error)
-      // 如果七牛云加载失败，使用模拟数据
-      setResources(mockResources)
+      // 如果七牛云加载失败，使用模拟数据，确保ID唯一性
+      const uniqueMockResources = mockResources.map((resource, index) => ({
+        ...resource,
+        id: index + 2000 // 使用2000+的ID确保唯一性
+      }))
+      setResources(uniqueMockResources)
       setLoading(false)
     }
   }
@@ -278,6 +369,10 @@ const ResourcesPage: React.FC = () => {
       case 'video': return <VideoCameraOutlined style={{ color: '#ff4d4f' }} />
       case 'image': return <FileImageOutlined style={{ color: '#52c41a' }} />
       case 'document': return <FilePdfOutlined style={{ color: '#1890ff' }} />
+      case 'ppt': return <FileOutlined style={{ color: '#ff7a00' }} />
+      case 'word': return <FileWordOutlined style={{ color: '#1890ff' }} />
+      case 'exam': return <FileTextOutlined style={{ color: '#722ed1' }} />
+      case 'audio': return <FileOutlined style={{ color: '#faad14' }} />
       default: return <FileOutlined style={{ color: '#8c8c8c' }} />
     }
   }
@@ -287,7 +382,10 @@ const ResourcesPage: React.FC = () => {
       case 'video': return 'red'
       case 'image': return 'green'
       case 'document': return 'blue'
-      case 'audio': return 'orange'
+      case 'ppt': return 'orange'
+      case 'word': return 'blue'
+      case 'exam': return 'purple'
+      case 'audio': return 'gold'
       default: return 'default'
     }
   }
@@ -295,6 +393,51 @@ const ResourcesPage: React.FC = () => {
   const showAnalysis = (analysis: VideoAnalysis) => {
     setSelectedAnalysis(analysis)
     setAnalysisModalVisible(true)
+  }
+
+  // 处理视频URL上传和分析
+  const handleVideoUrlSubmit = async (values: { url: string; title?: string }) => {
+    setVideoAnalyzing(true)
+    try {
+      // 模拟视频分析过程
+      message.loading('正在分析视频内容...', 3)
+
+      // 模拟API调用延迟
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
+      // 生成模拟分析结果
+      const newAnalysis: VideoAnalysis = {
+        id: Date.now(),
+        videoName: values.title || '在线视频分析',
+        duration: '42:15',
+        keyPoints: [
+          '视频内容概述与核心知识点',
+          '实践操作演示与案例分析',
+          '常见问题解答与注意事项',
+          '总结回顾与学习建议'
+        ],
+        sentiment: 'positive' as const,
+        engagement: Math.floor(Math.random() * 20) + 80, // 80-100
+        topics: ['在线学习', '视频教学', '知识分享'],
+        summary: `通过AI分析，该视频内容结构清晰，讲解详细，适合学习者观看。视频时长适中，知识点覆盖全面，是一个高质量的教学视频。`
+      }
+
+      // 添加到分析列表
+      setVideoAnalyses(prev => [newAnalysis, ...prev])
+
+      // 显示分析结果
+      showAnalysis(newAnalysis)
+
+      // 重置表单
+      videoUrlForm.resetFields()
+      setVideoUrlModalVisible(false)
+
+      message.success('视频分析完成！')
+    } catch (error) {
+      message.error('视频分析失败，请重试')
+    } finally {
+      setVideoAnalyzing(false)
+    }
   }
 
   const resourceColumns = [
@@ -315,9 +458,12 @@ const ResourcesPage: React.FC = () => {
       key: 'type',
       render: (type: string) => (
         <Tag color={getTypeColor(type)}>
-          {type === 'video' ? '视频' : 
-           type === 'document' ? '文档' : 
-           type === 'image' ? '图片' : 
+          {type === 'video' ? '视频' :
+           type === 'document' ? '文档' :
+           type === 'image' ? '图片' :
+           type === 'ppt' ? 'PPT课件' :
+           type === 'word' ? 'Word文档' :
+           type === 'exam' ? '试卷' :
            type === 'audio' ? '音频' : '其他'}
         </Tag>
       ),
@@ -325,6 +471,9 @@ const ResourcesPage: React.FC = () => {
         { text: '视频', value: 'video' },
         { text: '文档', value: 'document' },
         { text: '图片', value: 'image' },
+        { text: 'PPT课件', value: 'ppt' },
+        { text: 'Word文档', value: 'word' },
+        { text: '试卷', value: 'exam' },
         { text: '音频', value: 'audio' },
         { text: '其他', value: 'other' },
       ],
@@ -473,6 +622,18 @@ const ResourcesPage: React.FC = () => {
     return matchesSearch && matchesType
   })
 
+  // 按类型分组资源
+  const resourcesByType = {
+    video: filteredResources.filter(r => r.type === 'video'),
+    ppt: filteredResources.filter(r => r.type === 'ppt'),
+    word: filteredResources.filter(r => r.type === 'word'),
+    exam: filteredResources.filter(r => r.type === 'exam'),
+    document: filteredResources.filter(r => r.type === 'document'),
+    image: filteredResources.filter(r => r.type === 'image'),
+    audio: filteredResources.filter(r => r.type === 'audio'),
+    other: filteredResources.filter(r => !['video', 'ppt', 'word', 'exam', 'document', 'image', 'audio'].includes(r.type))
+  }
+
   // 统计数据
   const totalResources = resources.length
   const totalSize = resources.reduce((sum, r) => {
@@ -535,7 +696,7 @@ const ResourcesPage: React.FC = () => {
         </Row>
 
         <Tabs defaultActiveKey="resources">
-          <TabPane tab="资源列表" key="resources">
+          <TabPane tab="全部资源" key="resources">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <Space>
                 <Input.Search
@@ -585,7 +746,92 @@ const ResourcesPage: React.FC = () => {
             />
           </TabPane>
 
+          <TabPane tab="分类浏览" key="categories">
+            <Row gutter={[16, 16]}>
+              {Object.entries(resourcesByType).map(([type, typeResources]) => {
+                if (typeResources.length === 0) return null
+
+                const typeNames = {
+                  video: '📹 教学视频',
+                  ppt: '📊 PPT课件',
+                  word: '📝 Word文档',
+                  exam: '📋 试卷题库',
+                  document: '📄 PDF文档',
+                  image: '🖼️ 图片资源',
+                  audio: '🎵 音频资源',
+                  other: '📁 其他资源'
+                }
+
+                return (
+                  <Col span={12} key={type}>
+                    <Card
+                      title={`${typeNames[type as keyof typeof typeNames]} (${typeResources.length})`}
+                      size="small"
+                      extra={
+                        <Button
+                          type="link"
+                          size="small"
+                          onClick={() => setSelectedType(type)}
+                        >
+                          查看全部
+                        </Button>
+                      }
+                    >
+                      <List
+                        size="small"
+                        dataSource={typeResources.slice(0, 3)}
+                        renderItem={(resource) => (
+                          <List.Item
+                            actions={[
+                              <Button type="link" size="small" icon={<EyeOutlined />} />,
+                              <Button type="link" size="small" icon={<DownloadOutlined />} />
+                            ]}
+                          >
+                            <List.Item.Meta
+                              avatar={getFileIcon(resource.type)}
+                              title={resource.name}
+                              description={`${resource.size} | ${resource.uploader} | ${resource.downloads}次下载`}
+                            />
+                          </List.Item>
+                        )}
+                      />
+                      {typeResources.length > 3 && (
+                        <div style={{ textAlign: 'center', marginTop: 8 }}>
+                          <Button
+                            type="link"
+                            size="small"
+                            onClick={() => {
+                              setSelectedType(type)
+                              // 切换到全部资源标签页
+                            }}
+                          >
+                            查看更多 ({typeResources.length - 3} 个)
+                          </Button>
+                        </div>
+                      )}
+                    </Card>
+                  </Col>
+                )
+              })}
+            </Row>
+          </TabPane>
+
           <TabPane tab="视频分析" key="analysis">
+            <div style={{ marginBottom: 16 }}>
+              <Space>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setVideoUrlModalVisible(true)}
+                >
+                  分析在线视频
+                </Button>
+                <Button icon={<UploadOutlined />}>
+                  上传本地视频
+                </Button>
+              </Space>
+            </div>
+
             <List
               grid={{ gutter: 16, column: 1 }}
               dataSource={videoAnalyses}
@@ -797,6 +1043,73 @@ const ResourcesPage: React.FC = () => {
             </Card>
           </div>
         )}
+      </Modal>
+
+      {/* 视频URL上传分析Modal */}
+      <Modal
+        title="在线视频分析"
+        open={videoUrlModalVisible}
+        onCancel={() => {
+          setVideoUrlModalVisible(false)
+          videoUrlForm.resetFields()
+        }}
+        footer={null}
+        width={600}
+      >
+        <Form
+          form={videoUrlForm}
+          layout="vertical"
+          onFinish={handleVideoUrlSubmit}
+        >
+          <Form.Item
+            label="视频URL"
+            name="url"
+            rules={[
+              { required: true, message: '请输入视频URL' },
+              { type: 'url', message: '请输入有效的URL地址' }
+            ]}
+          >
+            <Input
+              placeholder="请输入视频链接，支持YouTube、Bilibili、腾讯视频等"
+              prefix="🔗"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="视频标题（可选）"
+            name="title"
+          >
+            <Input
+              placeholder="为视频添加自定义标题"
+              prefix="📝"
+            />
+          </Form.Item>
+
+          <div style={{ marginBottom: 16 }}>
+            <Text type="secondary">
+              💡 支持的视频平台：YouTube、Bilibili、腾讯视频、爱奇艺、优酷等
+            </Text>
+          </div>
+
+          <Form.Item>
+            <Space>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={videoAnalyzing}
+                icon={<BarChartOutlined />}
+              >
+                {videoAnalyzing ? '分析中...' : '开始分析'}
+              </Button>
+              <Button onClick={() => {
+                setVideoUrlModalVisible(false)
+                videoUrlForm.resetFields()
+              }}>
+                取消
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   )

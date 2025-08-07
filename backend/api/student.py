@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+from io import BytesIO
+import docx
+from docx.shared import Inches
 
 from database import (
     get_db, User, ChatHistory, KnowledgePoint, StudentDispute,
@@ -390,3 +393,237 @@ async def get_video_detail(
         created_at=video.created_at,
         teacher_name=teacher.display_name if teacher else "未知教师"
     )
+
+# ==================== 学习计划相关模型 ====================
+
+class StudyEventCreate(BaseModel):
+    title: str
+    start: datetime
+    end: datetime
+    type: str  # study, exam, assignment, review
+    subject: str
+    description: Optional[str] = None
+
+class StudyEventUpdate(BaseModel):
+    title: Optional[str] = None
+    start: Optional[datetime] = None
+    end: Optional[datetime] = None
+    type: Optional[str] = None
+    subject: Optional[str] = None
+    description: Optional[str] = None
+    completed: Optional[bool] = None
+
+class StudyEventResponse(BaseModel):
+    id: int
+    title: str
+    start: datetime
+    end: datetime
+    type: str
+    subject: str
+    description: Optional[str]
+    completed: bool
+    user_id: int
+    created_at: datetime
+
+class StudyPlanCreate(BaseModel):
+    title: str
+    description: str
+    subject: str
+    difficulty: str  # beginner, intermediate, advanced
+    duration: int  # 天数
+    goals: List[str]
+
+class StudyPlanResponse(BaseModel):
+    id: int
+    title: str
+    description: str
+    subject: str
+    difficulty: str
+    duration: int
+    goals: List[str]
+    progress: float
+    user_id: int
+    created_at: datetime
+
+class AIStudyPlanRequest(BaseModel):
+    subject: str
+    goal: str
+    level: str  # beginner, intermediate, advanced
+    duration: int
+    preferences: Optional[List[str]] = []
+    daily_time: Optional[int] = 2
+    requirements: Optional[str] = ""
+
+# ==================== 学习计划API ====================
+
+@student_router.get("/study-events", response_model=List[StudyEventResponse])
+async def get_study_events(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取学生的学习事件列表"""
+    # 这里需要在数据库中添加StudyEvent表，暂时返回模拟数据
+    return []
+
+@student_router.post("/study-events", response_model=StudyEventResponse)
+async def create_study_event(
+    event: StudyEventCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """创建学习事件"""
+    # 这里需要在数据库中添加StudyEvent表，暂时返回模拟数据
+    return StudyEventResponse(
+        id=1,
+        title=event.title,
+        start=event.start,
+        end=event.end,
+        type=event.type,
+        subject=event.subject,
+        description=event.description,
+        completed=False,
+        user_id=current_user.id,
+        created_at=datetime.now()
+    )
+
+@student_router.get("/study-plans", response_model=List[StudyPlanResponse])
+async def get_study_plans(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取学生的学习计划列表"""
+    # 这里需要在数据库中添加StudyPlan表，暂时返回模拟数据
+    return []
+
+@student_router.post("/ai-study-plan", response_model=StudyPlanResponse)
+async def generate_ai_study_plan(
+    request: AIStudyPlanRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """AI生成学习计划"""
+    try:
+        # 构建AI提示
+        prompt = f"""
+        请为学生生成一个详细的学习计划：
+
+        学习科目：{request.subject}
+        学习目标：{request.goal}
+        当前水平：{request.level}
+        计划时长：{request.duration}天
+        每日可用时间：{request.daily_time}小时
+        学习偏好：{', '.join(request.preferences) if request.preferences else '无特殊偏好'}
+        特殊要求：{request.requirements or '无'}
+
+        请生成一个包含以下内容的学习计划：
+        1. 计划标题
+        2. 详细描述
+        3. 学习目标（3-5个）
+        4. 分阶段学习安排
+
+        请以JSON格式返回，包含title, description, goals字段。
+        """
+
+        # 调用AI服务生成计划
+        ai_response = await ai_service.generate_response(prompt, "教学计划生成")
+
+        # 解析AI响应（这里简化处理）
+        plan_data = {
+            "title": f"{request.subject} - {request.goal}学习计划",
+            "description": f"基于AI分析生成的个性化{request.subject}学习计划",
+            "goals": [
+                f"掌握{request.subject}核心概念",
+                f"完成实践项目",
+                f"通过相关考试",
+                f"达到{request.goal}水平"
+            ]
+        }
+
+        return StudyPlanResponse(
+            id=1,
+            title=plan_data["title"],
+            description=plan_data["description"],
+            subject=request.subject,
+            difficulty=request.level,
+            duration=request.duration,
+            goals=plan_data["goals"],
+            progress=0.0,
+            user_id=current_user.id,
+            created_at=datetime.now()
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI生成学习计划失败: {str(e)}")
+
+@student_router.get("/study-plans/{plan_id}/export")
+async def export_study_plan_to_word(
+    plan_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """导出学习计划为Word文档"""
+    try:
+        # 创建Word文档
+        doc = docx.Document()
+
+        # 添加标题
+        title = doc.add_heading('个性化学习计划', 0)
+        title.alignment = 1  # 居中对齐
+
+        # 添加基本信息
+        doc.add_heading('基本信息', level=1)
+        doc.add_paragraph(f'学生姓名：{current_user.display_name}')
+        doc.add_paragraph(f'生成时间：{datetime.now().strftime("%Y年%m月%d日")}')
+        doc.add_paragraph(f'计划编号：{plan_id}')
+
+        # 添加学习目标
+        doc.add_heading('学习目标', level=1)
+        goals = [
+            '掌握核心知识点和概念',
+            '提高实践应用能力',
+            '培养独立思考和解决问题的能力',
+            '达到预期的学习效果'
+        ]
+        for goal in goals:
+            doc.add_paragraph(f'• {goal}')
+
+        # 添加学习安排
+        doc.add_heading('学习安排', level=1)
+        doc.add_paragraph('本学习计划采用循序渐进的方式，分为以下几个阶段：')
+
+        stages = [
+            '第一阶段：基础知识学习（1-2周）',
+            '第二阶段：实践练习（2-3周）',
+            '第三阶段：综合应用（1-2周）',
+            '第四阶段：总结复习（1周）'
+        ]
+        for stage in stages:
+            doc.add_paragraph(f'• {stage}')
+
+        # 添加学习建议
+        doc.add_heading('学习建议', level=1)
+        suggestions = [
+            '制定每日学习计划，保持学习的连续性',
+            '及时复习所学内容，巩固知识点',
+            '多做练习题，提高实践能力',
+            '遇到问题及时向老师或同学请教',
+            '定期自我评估学习效果'
+        ]
+        for suggestion in suggestions:
+            doc.add_paragraph(f'• {suggestion}')
+
+        # 保存到内存
+        buffer = BytesIO()
+        doc.save(buffer)
+        buffer.seek(0)
+
+        from fastapi.responses import StreamingResponse
+
+        return StreamingResponse(
+            BytesIO(buffer.read()),
+            media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            headers={'Content-Disposition': f'attachment; filename="学习计划_{plan_id}.docx"'}
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"导出Word文档失败: {str(e)}")

@@ -10,6 +10,7 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
@@ -38,6 +39,11 @@ const StudentLayout: React.FC = () => {
       key: '/student/practice',
       icon: <EditOutlined />,
       label: '自主练习',
+    },
+    {
+      key: '/student/study-plan',
+      icon: <CalendarOutlined />,
+      label: '学习计划',
     },
     {
       key: '/student/videos',

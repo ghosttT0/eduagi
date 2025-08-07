@@ -8,14 +8,18 @@ import {
   Button,
   Switch,
   Select,
-  Divider,
   Typography,
   Space,
   message,
-  Upload,
   Tabs,
   InputNumber,
   Radio,
+  Table,
+  Modal,
+  DatePicker,
+  Tag,
+  Popconfirm,
+  Upload,
   Slider,
 } from 'antd'
 import {
@@ -24,10 +28,12 @@ import {
   DatabaseOutlined,
   CloudOutlined,
   SaveOutlined,
-  UploadOutlined,
   ReloadOutlined,
   ExportOutlined,
   ImportOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons'
 
 const { Title, Text } = Typography
@@ -37,6 +43,9 @@ const { TabPane } = Tabs
 
 const SettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false)
+  const [announcementModalVisible, setAnnouncementModalVisible] = useState(false)
+  const [editingAnnouncement, setEditingAnnouncement] = useState<any>(null)
+  const [form] = Form.useForm()
 
   // 系统设置状态
   const [systemSettings, setSystemSettings] = useState({
@@ -80,6 +89,46 @@ const SettingsPage: React.FC = () => {
     autoCompress: true,
   })
 
+  // 系统公告数据
+  const [announcements, setAnnouncements] = useState([
+    {
+      id: 1,
+      title: '系统维护通知',
+      content: '系统将于本周六凌晨2:00-4:00进行例行维护，期间可能影响正常使用，请提前做好准备。',
+      type: 'warning',
+      status: 'active',
+      priority: 'high',
+      startTime: '2024-01-15 00:00:00',
+      endTime: '2024-01-20 23:59:59',
+      createTime: '2024-01-14 10:30:00',
+      creator: '系统管理员'
+    },
+    {
+      id: 2,
+      title: '新功能上线公告',
+      content: 'AI智能批改功能已正式上线，支持多种题型的自动批改和智能评分，欢迎体验使用。',
+      type: 'info',
+      status: 'active',
+      priority: 'medium',
+      startTime: '2024-01-10 00:00:00',
+      endTime: '2024-01-25 23:59:59',
+      createTime: '2024-01-10 09:15:00',
+      creator: '产品团队'
+    },
+    {
+      id: 3,
+      title: '平台升级完成',
+      content: '平台已完成v2.1.0版本升级，新增多项功能优化，提升了系统稳定性和用户体验。',
+      type: 'success',
+      status: 'expired',
+      priority: 'low',
+      startTime: '2024-01-05 00:00:00',
+      endTime: '2024-01-12 23:59:59',
+      createTime: '2024-01-05 14:20:00',
+      creator: '技术团队'
+    }
+  ])
+
   const handleSaveSettings = async (values: any) => {
     setLoading(true)
     try {
@@ -90,6 +139,52 @@ const SettingsPage: React.FC = () => {
       message.error('保存失败，请重试')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 系统公告相关函数
+  const handleCreateAnnouncement = () => {
+    setEditingAnnouncement(null)
+    form.resetFields()
+    setAnnouncementModalVisible(true)
+  }
+
+  const handleEditAnnouncement = (record: any) => {
+    setEditingAnnouncement(record)
+    form.setFieldsValue(record)
+    setAnnouncementModalVisible(true)
+  }
+
+  const handleDeleteAnnouncement = (id: number) => {
+    setAnnouncements(announcements.filter(item => item.id !== id))
+    message.success('公告删除成功')
+  }
+
+  const handleSaveAnnouncement = async (values: any) => {
+    try {
+      if (editingAnnouncement) {
+        // 编辑公告
+        setAnnouncements(announcements.map(item =>
+          item.id === editingAnnouncement.id
+            ? { ...item, ...values, id: editingAnnouncement.id }
+            : item
+        ))
+        message.success('公告更新成功')
+      } else {
+        // 新建公告
+        const newAnnouncement = {
+          ...values,
+          id: Date.now(),
+          createTime: new Date().toLocaleString('zh-CN'),
+          creator: '系统管理员'
+        }
+        setAnnouncements([newAnnouncement, ...announcements])
+        message.success('公告创建成功')
+      }
+      setAnnouncementModalVisible(false)
+      form.resetFields()
+    } catch (error) {
+      message.error('操作失败，请重试')
     }
   }
 
@@ -444,9 +539,238 @@ const SettingsPage: React.FC = () => {
             </Col>
           </Row>
         </TabPane>
+
+        {/* 系统公告管理 */}
+        <TabPane tab={<span><BellOutlined />系统公告</span>} key="announcements">
+          <Card
+            title="系统公告管理"
+            extra={
+              <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateAnnouncement}>
+                发布公告
+              </Button>
+            }
+          >
+            <Table
+              dataSource={announcements}
+              rowKey="id"
+              columns={[
+                {
+                  title: '公告标题',
+                  dataIndex: 'title',
+                  key: 'title',
+                  width: 200,
+                },
+                {
+                  title: '公告类型',
+                  dataIndex: 'type',
+                  key: 'type',
+                  width: 100,
+                  render: (type: string) => {
+                    const colors = {
+                      info: 'blue',
+                      warning: 'orange',
+                      success: 'green',
+                      error: 'red'
+                    }
+                    return <Tag color={colors[type as keyof typeof colors]}>{type}</Tag>
+                  }
+                },
+                {
+                  title: '优先级',
+                  dataIndex: 'priority',
+                  key: 'priority',
+                  width: 100,
+                  render: (priority: string) => {
+                    const colors = {
+                      high: 'red',
+                      medium: 'orange',
+                      low: 'blue'
+                    }
+                    return <Tag color={colors[priority as keyof typeof colors]}>{priority}</Tag>
+                  }
+                },
+                {
+                  title: '状态',
+                  dataIndex: 'status',
+                  key: 'status',
+                  width: 100,
+                  render: (status: string) => {
+                    const colors = {
+                      active: 'green',
+                      expired: 'gray',
+                      draft: 'orange'
+                    }
+                    const labels = {
+                      active: '生效中',
+                      expired: '已过期',
+                      draft: '草稿'
+                    }
+                    return <Tag color={colors[status as keyof typeof colors]}>{labels[status as keyof typeof labels]}</Tag>
+                  }
+                },
+                {
+                  title: '创建时间',
+                  dataIndex: 'createTime',
+                  key: 'createTime',
+                  width: 150,
+                },
+                {
+                  title: '创建人',
+                  dataIndex: 'creator',
+                  key: 'creator',
+                  width: 100,
+                },
+                {
+                  title: '操作',
+                  key: 'action',
+                  width: 150,
+                  render: (_, record) => (
+                    <Space>
+                      <Button
+                        type="link"
+                        icon={<EditOutlined />}
+                        onClick={() => handleEditAnnouncement(record)}
+                      >
+                        编辑
+                      </Button>
+                      <Popconfirm
+                        title="确定要删除这条公告吗？"
+                        onConfirm={() => handleDeleteAnnouncement(record.id)}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <Button type="link" danger icon={<DeleteOutlined />}>
+                          删除
+                        </Button>
+                      </Popconfirm>
+                    </Space>
+                  ),
+                },
+              ]}
+            />
+          </Card>
+
+          {/* 公告编辑模态框 */}
+          <Modal
+            title={editingAnnouncement ? '编辑公告' : '发布新公告'}
+            open={announcementModalVisible}
+            onCancel={() => setAnnouncementModalVisible(false)}
+            footer={null}
+            width={800}
+          >
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleSaveAnnouncement}
+            >
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="公告标题"
+                    name="title"
+                    rules={[{ required: true, message: '请输入公告标题' }]}
+                  >
+                    <Input placeholder="请输入公告标题" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="公告类型"
+                    name="type"
+                    rules={[{ required: true, message: '请选择公告类型' }]}
+                  >
+                    <Select placeholder="请选择公告类型">
+                      <Option value="info">信息</Option>
+                      <Option value="warning">警告</Option>
+                      <Option value="success">成功</Option>
+                      <Option value="error">错误</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="优先级"
+                    name="priority"
+                    rules={[{ required: true, message: '请选择优先级' }]}
+                  >
+                    <Select placeholder="请选择优先级">
+                      <Option value="high">高</Option>
+                      <Option value="medium">中</Option>
+                      <Option value="low">低</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="状态"
+                    name="status"
+                    rules={[{ required: true, message: '请选择状态' }]}
+                  >
+                    <Select placeholder="请选择状态">
+                      <Option value="active">生效中</Option>
+                      <Option value="draft">草稿</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    label="开始时间"
+                    name="startTime"
+                    rules={[{ required: true, message: '请选择开始时间' }]}
+                  >
+                    <DatePicker
+                      showTime
+                      style={{ width: '100%' }}
+                      placeholder="请选择开始时间"
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="结束时间"
+                    name="endTime"
+                    rules={[{ required: true, message: '请选择结束时间' }]}
+                  >
+                    <DatePicker
+                      showTime
+                      style={{ width: '100%' }}
+                      placeholder="请选择结束时间"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Form.Item
+                label="公告内容"
+                name="content"
+                rules={[{ required: true, message: '请输入公告内容' }]}
+              >
+                <TextArea
+                  rows={6}
+                  placeholder="请输入公告内容"
+                  maxLength={500}
+                  showCount
+                />
+              </Form.Item>
+              <Form.Item>
+                <Space>
+                  <Button type="primary" htmlType="submit">
+                    {editingAnnouncement ? '更新公告' : '发布公告'}
+                  </Button>
+                  <Button onClick={() => setAnnouncementModalVisible(false)}>
+                    取消
+                  </Button>
+                </Space>
+              </Form.Item>
+            </Form>
+          </Modal>
+        </TabPane>
       </Tabs>
     </div>
   )
 }
 
-export default SettingsPage 
+export default SettingsPage

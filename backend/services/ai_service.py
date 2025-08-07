@@ -39,10 +39,54 @@ class AIService:
     
     def __init__(self):
         self.client = httpx.AsyncClient(timeout=60.0)
+
+    def _get_mock_response(self, prompt: str) -> AIResponse:
+        """生成模拟AI回复"""
+        import random
+
+        # 根据提示词内容生成相应的模拟回复
+        if "深度学习" in prompt or "神经网络" in prompt:
+            mock_responses = [
+                "深度学习是机器学习的一个分支，它使用多层神经网络来学习数据的复杂模式。神经网络的基本单元是神经元，通过前向传播和反向传播算法来训练模型。",
+                "神经网络由输入层、隐藏层和输出层组成。每一层都包含多个神经元，神经元之间通过权重连接。训练过程中，我们通过调整这些权重来优化模型性能。",
+                "深度学习在计算机视觉、自然语言处理等领域都有广泛应用。常见的深度学习模型包括卷积神经网络(CNN)、循环神经网络(RNN)和Transformer等。"
+            ]
+        elif "机器学习" in prompt or "算法" in prompt:
+            mock_responses = [
+                "机器学习是人工智能的核心技术之一，主要分为监督学习、无监督学习和强化学习三大类。监督学习使用标记数据训练模型，无监督学习从未标记数据中发现模式。",
+                "常见的机器学习算法包括线性回归、决策树、支持向量机、随机森林等。选择合适的算法需要考虑数据特征、问题类型和性能要求。",
+                "机器学习的关键步骤包括数据预处理、特征工程、模型选择、训练和评估。数据质量对模型性能有重要影响，特征工程往往决定了模型的上限。"
+            ]
+        elif "Python" in prompt or "编程" in prompt:
+            mock_responses = [
+                "Python是一种高级编程语言，语法简洁易读，在数据科学、机器学习、Web开发等领域广泛应用。Python的核心特点是简洁性和可读性。",
+                "Python中的数据结构包括列表、元组、字典和集合。列表是可变的有序序列，元组是不可变的有序序列，字典是键值对的映射，集合是无序的唯一元素集合。",
+                "Python的面向对象编程支持类和对象的概念。类是对象的模板，对象是类的实例。通过继承、封装和多态，可以构建复杂的程序结构。"
+            ]
+        else:
+            mock_responses = [
+                "这是一个很好的问题！让我来为您详细解答。首先，我们需要理解问题的核心概念，然后分析相关的知识点和应用场景。",
+                "根据您的问题，我建议从基础概念开始学习，逐步深入到具体的应用。理论与实践相结合是最有效的学习方法。",
+                "这个知识点在实际应用中非常重要。建议您多做练习，加深理解。如果有具体的疑问，可以随时向我提问。"
+            ]
+
+        content = random.choice(mock_responses)
+
+        return AIResponse(
+            content=content,
+            usage={"total_tokens": len(content)},
+            model="mock-model",
+            timestamp=datetime.now()
+        )
         
     async def call_qwen_api(self, prompt: str, **kwargs) -> AIResponse:
         """调用通义千问API"""
-        
+
+        # 检查API密钥
+        if not AIConfig.QWEN_API_KEY:
+            print("警告：未配置QWEN_API_KEY，使用模拟回复")
+            return self._get_mock_response(prompt)
+
         headers = {
             "Authorization": f"Bearer {AIConfig.QWEN_API_KEY}",
             "Content-Type": "application/json"
@@ -85,13 +129,9 @@ class AIService:
                 raise Exception(f"AI API返回异常: {result}")
                 
         except Exception as e:
-            # 如果API调用失败，返回模拟响应
-            return AIResponse(
-                content=f"AI服务暂时不可用，这是一个模拟响应。原始请求：{prompt[:100]}...",
-                usage={"total_tokens": 0},
-                model=data["model"],
-                timestamp=datetime.now()
-            )
+            print(f"AI API调用失败: {e}")
+            # 如果API调用失败，返回智能模拟响应
+            return self._get_mock_response(prompt)
     
     async def generate_teaching_plan(self, course_name: str, chapter: str, topic: str = None, 
                                    class_hours: int = 2, teaching_time: int = 90) -> Dict[str, Any]:

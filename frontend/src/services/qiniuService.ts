@@ -23,16 +23,28 @@ interface QiniuListResponse {
   commonPrefixes?: string[]
 }
 
+interface VideoAnalysis {
+  id: number
+  videoName: string
+  duration: string
+  keyPoints: string[]
+  sentiment: 'positive' | 'neutral' | 'negative'
+  engagement: number
+  topics: string[]
+  summary: string
+}
+
 class QiniuService {
   private config: QiniuConfig
 
   constructor() {
     // 从环境变量或配置中获取七牛云配置
+    // 在Vite中，环境变量需要VITE_前缀才能在客户端访问
     this.config = {
-      accessKey: process.env.REACT_APP_QINIU_ACCESS_KEY || '',
-      secretKey: process.env.REACT_APP_QINIU_SECRET_KEY || '',
-      bucket: process.env.REACT_APP_QINIU_BUCKET_NAME || 'eduagi',
-      domain: process.env.REACT_APP_QINIU_DOMAIN || 'https://eduagi.site'
+      accessKey: import.meta.env.VITE_QINIU_ACCESS_KEY || '',
+      secretKey: import.meta.env.VITE_QINIU_SECRET_KEY || '',
+      bucket: import.meta.env.VITE_QINIU_BUCKET_NAME || 'eduagi',
+      domain: import.meta.env.VITE_QINIU_DOMAIN || 'https://eduagi.site'
     }
   }
 
@@ -232,11 +244,12 @@ class QiniuService {
    * 模拟获取视频分析数据
    * @param key 视频文件key
    */
-  async getVideoAnalysis(key: string): Promise<any> {
+  async getVideoAnalysis(key: string): Promise<VideoAnalysis> {
     // 模拟视频分析数据
     const fileName = this.getFileName(key)
     
-    const mockAnalysis = {
+    const mockAnalysis: VideoAnalysis = {
+      id: Date.now(),
       videoName: fileName,
       duration: '45:32',
       keyPoints: ['核心概念讲解', '实践演示', '案例分析', '总结回顾'],

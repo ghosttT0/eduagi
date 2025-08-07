@@ -42,16 +42,19 @@ export const adminTheme: ThemeConfig = {
       bodyBg: '#F8F9FA',
     },
     Menu: {
-      itemColor: '#5A5A5A',       // 菜单项的深灰色文字
-      itemHoverColor: '#7B68EE',  // 悬停时的紫色
+      itemColor: '#2c2c2c',         // 菜单项的深色文字，更清晰
+      itemHoverColor: '#7B68EE',    // 悬停时的紫色
       itemSelectedColor: '#FFFFFF', // 选中项的白文字
       itemSelectedBg: '#7B68EE',    // 选中项的紫色背景
+      itemHoverBg: '#f8f9ff',       // 悬停背景色
       itemBorderRadius: 8,
       itemPaddingInline: 24,
       itemMarginInline: 8,
       itemHeight: 48,
       collapsedIconSize: 20,
       collapsedWidth: 80,
+      fontSize: 14,
+      fontWeight: 500,
     },
     Card: {
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)', // 浮动卡片效果

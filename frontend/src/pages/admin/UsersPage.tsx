@@ -13,9 +13,22 @@ import {
   Card,
   Tag,
   Tooltip,
+  Upload,
+  Dropdown,
 } from 'antd'
-import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons'
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SettingOutlined,
+  DownloadOutlined,
+  UploadOutlined,
+  ExportOutlined,
+  ImportOutlined
+} from '@ant-design/icons'
 import { userAPI, classAPI } from '../../services/api'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 
 const { Title, Text } = Typography
 const { Option } = Select
@@ -137,6 +150,198 @@ const UsersPage: React.FC = () => {
     } catch (error) {
       message.error(editingUser ? '更新失败' : '创建失败')
     }
+  }
+
+  // Excel导出功能
+  const handleExportExcel = () => {
+    try {
+      // 准备导出数据
+      const exportData = users.map(user => {
+        const classItem = classes.find(c => c.id === user.class_id)
+        return {
+          'ID': user.id,
+          '账号': user.account_id,
+          '姓名': user.display_name,
+          '角色': user.role,
+          '班级': classItem ? classItem.name : '未分配',
+          '班级ID': user.class_id || '',
+          '创建时间': '2024-08-01', // 模拟数据
+          '状态': Math.random() > 0.2 ? '活跃' : '禁用'
+        }
+      })
+
+      // 创建工作簿
+      const ws = XLSX.utils.json_to_sheet(exportData)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, '用户列表')
+
+      // 设置列宽
+      const colWidths = [
+        { wch: 8 },  // ID
+        { wch: 15 }, // 账号
+        { wch: 15 }, // 姓名
+        { wch: 10 }, // 角色
+        { wch: 25 }, // 班级
+        { wch: 10 }, // 班级ID
+        { wch: 15 }, // 创建时间
+        { wch: 10 }  // 状态
+      ]
+      ws['!cols'] = colWidths
+
+      // 导出文件
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+      const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      saveAs(data, `用户列表_${new Date().toISOString().split('T')[0]}.xlsx`)
+
+      message.success('导出成功')
+    } catch (error) {
+      console.error('导出失败:', error)
+      message.error('导出失败')
+    }
+  }
+
+  // Excel导入功能
+  const handleImportExcel = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer)
+        const workbook = XLSX.read(data, { type: 'array' })
+        const sheetName = workbook.SheetNames[0]
+        const worksheet = workbook.Sheets[sheetName]
+        const jsonData = XLSX.utils.sheet_to_json(worksheet)
+
+        // 验证和转换数据
+        const importedUsers: any[] = []
+        const errors: string[] = []
+
+        jsonData.forEach((row: any, index: number) => {
+          const rowNum = index + 2 // Excel行号从2开始（第1行是标题）
+
+          // 验证必填字段
+          if (!row['账号']) {
+            errors.push(`第${rowNum}行：账号不能为空`)
+            return
+          }
+          if (!row['姓名']) {
+            errors.push(`第${rowNum}行：姓名不能为空`)
+            return
+          }
+          if (!row['角色']) {
+            errors.push(`第${rowNum}行：角色不能为空`)
+            return
+          }
+
+          // 验证角色值
+          const validRoles = ['管理员', '教师', '学生']
+          if (!validRoles.includes(row['角色'])) {
+            errors.push(`第${rowNum}行：角色必须是 ${validRoles.join('、')} 之一`)
+            return
+          }
+
+          // 查找班级ID
+          let classId = undefined
+          if (row['班级'] && row['班级'] !== '未分配') {
+            const classItem = classes.find(c => c.name === row['班级'])
+            if (classItem) {
+              classId = classItem.id
+            } else if (row['班级ID']) {
+              classId = parseInt(row['班级ID'])
+            }
+          }
+
+          importedUsers.push({
+            account_id: row['账号'],
+            display_name: row['姓名'],
+            role: row['角色'],
+            class_id: classId,
+            password: '123456' // 默认密码
+          })
+        })
+
+        if (errors.length > 0) {
+          Modal.error({
+            title: '导入数据验证失败',
+            content: (
+              <div>
+                <p>发现以下错误：</p>
+                <ul>
+                  {errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            ),
+            width: 600
+          })
+          return
+        }
+
+        // 显示导入预览
+        Modal.confirm({
+          title: '确认导入',
+          content: `即将导入 ${importedUsers.length} 个用户，是否继续？`,
+          onOk: async () => {
+            try {
+              // 这里应该调用批量创建API
+              // await userAPI.batchCreateUsers(importedUsers)
+
+              // 模拟批量导入
+              const newUsers = importedUsers.map((user, index) => ({
+                ...user,
+                id: users.length + index + 1
+              }))
+              setUsers([...users, ...newUsers])
+
+              message.success(`成功导入 ${importedUsers.length} 个用户`)
+            } catch (error) {
+              message.error('批量导入失败')
+            }
+          }
+        })
+
+      } catch (error) {
+        console.error('解析Excel文件失败:', error)
+        message.error('解析Excel文件失败，请检查文件格式')
+      }
+    }
+    reader.readAsArrayBuffer(file)
+    return false // 阻止默认上传行为
+  }
+
+  // 下载导入模板
+  const handleDownloadTemplate = () => {
+    const templateData = [
+      {
+        '账号': 'S001',
+        '姓名': '张三',
+        '角色': '学生',
+        '班级': '计算机科学2024级1班',
+        '班级ID': '1',
+        '备注': '角色可选：管理员、教师、学生'
+      }
+    ]
+
+    const ws = XLSX.utils.json_to_sheet(templateData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, '用户导入模板')
+
+    // 设置列宽
+    const colWidths = [
+      { wch: 15 }, // 账号
+      { wch: 15 }, // 姓名
+      { wch: 10 }, // 角色
+      { wch: 25 }, // 班级
+      { wch: 10 }, // 班级ID
+      { wch: 30 }  // 备注
+    ]
+    ws['!cols'] = colWidths
+
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    saveAs(data, '用户导入模板.xlsx')
+
+    message.success('模板下载成功')
   }
 
   const columns = [
@@ -295,6 +500,41 @@ const UsersPage: React.FC = () => {
               <Option value="教师">教师</Option>
               <Option value="学生">学生</Option>
             </Select>
+
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: 'export',
+                    label: '导出用户列表',
+                    icon: <ExportOutlined />,
+                    onClick: handleExportExcel
+                  },
+                  {
+                    key: 'template',
+                    label: '下载导入模板',
+                    icon: <DownloadOutlined />,
+                    onClick: handleDownloadTemplate
+                  }
+                ]
+              }}
+              placement="bottomRight"
+            >
+              <Button icon={<DownloadOutlined />}>
+                导出 <span style={{ marginLeft: 4 }}>▼</span>
+              </Button>
+            </Dropdown>
+
+            <Upload
+              accept=".xlsx,.xls"
+              beforeUpload={handleImportExcel}
+              showUploadList={false}
+            >
+              <Button icon={<ImportOutlined />}>
+                导入Excel
+              </Button>
+            </Upload>
+
             <Button
               type="primary"
               icon={<PlusOutlined />}

@@ -1,0 +1,374 @@
+/* 酷炫数据大屏样式 */
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
+  color: #ffffff;
+  font-family: 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  padding: 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 动态背景效果 */
+.dashboard-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+  animation: backgroundPulse 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes backgroundPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.dashboard-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 头部样式 */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 30px 0;
+  position: relative;
+}
+
+.dashboard-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ffff, transparent);
+  animation: lineGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes lineGlow {
+  from { box-shadow: 0 0 5px #00ffff; }
+  to { box-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff; }
+}
+
+.main-title {
+  font-size: 48px;
+  font-weight: bold;
+  background: linear-gradient(45deg, #00ffff, #ff6b6b, #4ecdc4, #45b7d1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 15px 0;
+  animation: titlePulse 3s ease-in-out infinite;
+  text-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+}
+
+@keyframes titlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #4ecdc4;
+  margin: 0;
+  opacity: 0.9;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+}
+
+/* 统计概览样式 */
+.stats-overview {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 24px;
+  color: #00ffff;
+  margin-bottom: 20px;
+  text-align: center;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+  font-weight: bold;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 107, 107, 0.1));
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 15px;
+  padding: 30px 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00ffff, transparent);
+  animation: scanLine 3s linear infinite;
+}
+
+@keyframes scanLine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.stat-card:hover {
+  transform: translateY(-10px) scale(1.05);
+  border-color: rgba(0, 255, 255, 0.8);
+  box-shadow: 0 20px 40px rgba(0, 255, 255, 0.3);
+}
+
+.stat-number {
+  font-size: 48px;
+  font-weight: bold;
+  color: #00ffff;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 16px;
+  color: #4ecdc4;
+  font-weight: 500;
+  text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+}
+
+/* 课程状态样式 */
+.course-status {
+  margin-bottom: 40px;
+}
+
+.course-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.course-item {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 4px solid #00ffff;
+  border-radius: 10px;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.course-item:hover {
+  transform: translateX(10px);
+  border-left-color: #ff6b6b;
+  box-shadow: 0 5px 20px rgba(255, 107, 107, 0.3);
+}
+
+.course-icon {
+  font-size: 24px;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+}
+
+.course-name {
+  flex: 1;
+  font-size: 16px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.course-status {
+  font-size: 14px;
+  color: #4ecdc4;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(78, 205, 196, 0.5);
+}
+
+/* 图表容器样式 */
+.charts-container {
+  margin-bottom: 40px;
+}
+
+.chart-panel {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 15px;
+  padding: 20px;
+  height: 300px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.chart-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00ffff, transparent);
+  animation: chartScan 4s linear infinite;
+}
+
+@keyframes chartScan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.chart-panel:hover {
+  transform: translateY(-5px);
+  border-color: rgba(0, 255, 255, 0.6);
+  box-shadow: 0 15px 30px rgba(0, 255, 255, 0.2);
+}
+
+.chart-title {
+  font-size: 18px;
+  color: #00ffff;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+}
+
+.chart-content {
+  height: 200px;
+  position: relative;
+}
+
+/* 系统状态样式 */
+.system-status {
+  margin-bottom: 40px;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.status-item {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.1));
+  border: 2px solid rgba(255, 107, 107, 0.3);
+  border-radius: 15px;
+  padding: 25px;
+  text-align: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.status-item:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 107, 107, 0.6);
+  box-shadow: 0 15px 30px rgba(255, 107, 107, 0.3);
+}
+
+.status-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}
+
+.status-label {
+  font-size: 16px;
+  color: #4ecdc4;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+}
+
+.status-value {
+  font-size: 24px;
+  color: #ff6b6b;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 15px;
+  text-shadow: 0 0 15px rgba(255, 107, 107, 0.6);
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .course-list {
+    grid-template-columns: 1fr;
+  }
+
+  .status-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .main-title {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 15px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .stat-number {
+    font-size: 36px;
+  }
+
+  .chart-panel {
+    height: 250px;
+  }
+
+  .chart-content {
+    height: 150px;
+  }
+}
+
+

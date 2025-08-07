@@ -8,10 +8,14 @@ import TeacherLayout from './layouts/TeacherLayout'
 import StudentLayout from './layouts/StudentLayout'
 import TeacherDashboardPage from './pages/teacher/DashboardPage'
 import StudentDashboardPage from './pages/student/DashboardPage'
+import StudyPlanPage from './pages/student/StudyPlanPage'
 import AdvancedDashboard from './pages/admin/AdvancedDashboard'
+import AnalyticsPage from './pages/admin/AnalyticsPage'
+import DataVisualizationScreen from './pages/admin/DataVisualizationScreen'
 import UsersPage from './pages/admin/UsersPage'
 import ClassesPage from './pages/admin/ClassesPage'
 import ResourcesPage from './pages/admin/ResourcesPage'
+import SettingsPage from './pages/admin/SettingsPage'
 import TeachingPlanPage from './pages/teacher/TeachingPlanPage'
 import MindMapPage from './pages/teacher/MindMapPage'
 import ExamGeneratorPage from './pages/teacher/ExamGeneratorPage'
@@ -96,6 +100,7 @@ function App() {
           <Route path="dashboard" element={<StudentDashboardPage />} />
           <Route path="ai-partner" element={<AIPartnerPage />} />
           <Route path="practice" element={<PracticePage />} />
+          <Route path="study-plan" element={<StudyPlanPage />} />
           <Route path="videos" element={<div>视频学习页面</div>} />
           <Route path="disputes" element={<div>向老师提问页面</div>} />
           <Route path="settings" element={<div>个人设置页面</div>} />
@@ -114,10 +119,12 @@ function App() {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdvancedDashboard />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="visualization-screen" element={<DataVisualizationScreen />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="classes" element={<ClassesPage />} />
           <Route path="resources" element={<ResourcesPage />} />
-          <Route path="settings" element={<div>系统设置页面</div>} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
 
         {/* 根路径和未知路径重定向 */}

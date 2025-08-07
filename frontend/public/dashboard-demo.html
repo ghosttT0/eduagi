@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 智能教育数据大屏 - 酷炫版</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1426 0%, #1a2332 50%, #0f1419 100%);
+            font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+        
+        /* 3D背景粒子效果 */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        /* 动态网格背景 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,212,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: grid-move 20s linear infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: auto 1fr 1fr;
+            gap: 15px;
+            padding: 20px;
+            height: 100vh;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            background: linear-gradient(90deg, rgba(0,150,255,0.15) 0%, rgba(0,255,150,0.15) 100%);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shine 4s infinite;
+        }
+        
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            background: linear-gradient(45deg, #00d4ff, #00ff88, #ff6b6b, #00d4ff);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 3s ease infinite;
+            text-shadow: 0 0 30px rgba(0,212,255,0.5);
+            margin-bottom: 10px;
+        }
+        
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #8cc8ff;
+            opacity: 0.9;
+        }
+        
+        .panel {
+            background: rgba(15,25,35,0.9);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+            backdrop-filter: blur(15px);
+            box-shadow: 
+                0 12px 40px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.5),
+                0 0 30px rgba(0,212,255,0.2);
+        }
+        
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00d4ff, #00ff88, #ff6b6b, #ffaa00);
+            background-size: 300% 300%;
+            animation: border-glow 3s ease infinite;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        @keyframes border-glow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .panel-title {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0,212,255,0.5);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-item {
+            background: linear-gradient(135deg, rgba(0,212,255,0.15) 0%, rgba(0,255,136,0.15) 100%);
+            border: 1px solid rgba(0,212,255,0.4);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            transform: scale(1.05);
+            border-color: rgba(0,255,136,0.6);
+        }
+        
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(0,255,136,0.3) 0%, transparent 70%);
+            transition: all 0.3s ease;
+            transform: translate(-50%, -50%);
+        }
+        
+        .stat-item:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00ff88;
+            animation: pulse 2s infinite;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .stat-label {
+            font-size: 1em;
+            color: #8cc8ff;
+            margin-top: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .chart-container {
+            height: 300px;
+            width: 100%;
+            position: relative;
+        }
+        
+        .data-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0,150,255,0.2);
+            animation: slideIn 0.5s ease-out;
+            transition: all 0.3s ease;
+        }
+        
+        .data-item:hover {
+            background: rgba(0,212,255,0.1);
+            padding-left: 10px;
+            border-radius: 8px;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            border-radius: 5px;
+            animation: progressAnimation 2s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: progress-shine 2s infinite;
+        }
+        
+        @keyframes progressAnimation {
+            from { width: 0%; }
+        }
+        
+        @keyframes progress-shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #00d4ff, #00ff88);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto repeat(5, 1fr);
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stat-value {
+                font-size: 1.8em;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles-canvas"></canvas>
+    
+    <div class="dashboard">
+        <div class="header">
+            <h1>🎓 智能教育数据监控平台</h1>
+            <p>实时数据 · 智能分析 · 精准决策 · 未来教育</p>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">📊 实时统计概览</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalStudents">2,190</div>
+                    <div class="stat-label">在线学生</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTeachers">190</div>
+                    <div class="stat-label">活跃教师</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalCourses">3,001</div>
+                    <div class="stat-label">课程总数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalExams">108</div>
+                    <div class="stat-label">考试场次</div>
+                </div>
+            </div>
+            
+            <div class="data-list" id="recentActivities">
+                <div class="data-item">
+                    <span>🔥 数据结构与算法</span>
+                    <span style="color: #00ff88;">进行中</span>
+                </div>
+                <div class="data-item">
+                    <span>🤖 机器学习基础</span>
+                    <span style="color: #ffaa00;">准备中</span>
+                </div>
+                <div class="data-item">
+                    <span>🌐 Web开发实战</span>
+                    <span style="color: #00ff88;">进行中</span>
+                </div>
+                <div class="data-item">
+                    <span>📱 移动应用开发</span>
+                    <span style="color: #00d4ff;">已完成</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">📈 学习趋势分析</div>
+            <div class="chart-container" id="trendChart"></div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">🎯 学习效果雷达</div>
+            <div class="chart-container" id="performanceChart"></div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">🏆 成绩分布统计</div>
+            <div class="chart-container" id="gradeChart"></div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">⚡ 系统运行状态</div>
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>🖥️ CPU使用率</span>
+                    <span id="cpuUsage">75%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%;"></div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>💾 内存使用率</span>
+                    <span id="memoryUsage">68%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 68%;"></div>
+                </div>
+            </div>
+            
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>🌐 网络流量</span>
+                    <span id="networkUsage">45%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 45%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 3D粒子背景效果
+        function initParticles() {
+            const canvas = document.getElementById('particles-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            
+            // 创建粒子
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 1000;
+            const posArray = new Float32Array(particlesCount * 3);
+            
+            for (let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 100;
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.005,
+                color: 0x00d4ff,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+            
+            camera.position.z = 30;
+            
+            // 动画循环
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                particlesMesh.rotation.x += 0.001;
+                particlesMesh.rotation.y += 0.002;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // 窗口大小调整
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        
+        // 初始化图表
+        function initCharts() {
+            // 学习趋势图表
+            const trendChart = echarts.init(document.getElementById('trendChart'));
+            const trendOption = {
+                backgroundColor: 'transparent',
+                grid: { top: 30, right: 30, bottom: 50, left: 50 },
+                xAxis: {
+                    type: 'category',
+                    data: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    axisLine: { lineStyle: { color: '#00d4ff', width: 2 } },
+                    axisLabel: { color: '#8cc8ff', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { lineStyle: { color: '#00d4ff', width: 2 } },
+                    axisLabel: { color: '#8cc8ff', fontSize: 12 },
+                    splitLine: { lineStyle: { color: 'rgba(0,212,255,0.2)' } }
+                },
+                series: [{
+                    data: [820, 932, 901, 934, 1290, 1330],
+                    type: 'line',
+                    smooth: true,
+                    lineStyle: { 
+                        color: '#00ff88', 
+                        width: 4,
+                        shadowColor: 'rgba(0,255,136,0.5)',
+                        shadowBlur: 10
+                    },
+                    itemStyle: { 
+                        color: '#00ff88',
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    areaStyle: {
+                        color: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: 'rgba(0,255,136,0.4)' },
+                                { offset: 1, color: 'rgba(0,255,136,0.05)' }
+                            ]
+                        }
+                    },
+                    symbol: 'circle',
+                    symbolSize: 8
+                }],
+                animation: true,
+                animationDuration: 3000,
+                animationEasing: 'elasticOut'
+            };
+            trendChart.setOption(trendOption);
+            
+            // 学习效果雷达图
+            const performanceChart = echarts.init(document.getElementById('performanceChart'));
+            const performanceOption = {
+                backgroundColor: 'transparent',
+                radar: {
+                    indicator: [
+                        { name: '理解能力', max: 100 },
+                        { name: '实践能力', max: 100 },
+                        { name: '创新思维', max: 100 },
+                        { name: '团队协作', max: 100 },
+                        { name: '问题解决', max: 100 }
+                    ],
+                    axisLine: { lineStyle: { color: 'rgba(0,212,255,0.4)' } },
+                    splitLine: { lineStyle: { color: 'rgba(0,212,255,0.3)' } },
+                    axisLabel: { color: '#8cc8ff', fontSize: 11 },
+                    splitArea: {
+                        areaStyle: {
+                            color: [
+                                'rgba(0,212,255,0.05)',
+                                'rgba(0,255,136,0.05)'
+                            ]
+                        }
+                    }
+                },
+                series: [{
+                    type: 'radar',
+                    data: [{
+                        value: [85, 92, 78, 88, 90],
+                        areaStyle: {
+                            color: 'rgba(0,255,136,0.3)'
+                        },
+                        lineStyle: { 
+                            color: '#00ff88', 
+                            width: 3,
+                            shadowColor: 'rgba(0,255,136,0.5)',
+                            shadowBlur: 10
+                        },
+                        itemStyle: { 
+                            color: '#00ff88',
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }
+                    }],
+                    animation: true,
+                    animationDuration: 3000
+                }]
+            };
+            performanceChart.setOption(performanceOption);
+            
+            // 成绩分布饼图
+            const gradeChart = echarts.init(document.getElementById('gradeChart'));
+            const gradeOption = {
+                backgroundColor: 'transparent',
+                series: [{
+                    type: 'pie',
+                    radius: ['45%', '75%'],
+                    center: ['50%', '50%'],
+                    data: [
+                        { 
+                            value: 35, 
+                            name: '优秀', 
+                            itemStyle: { 
+                                color: '#00ff88',
+                                shadowColor: 'rgba(0,255,136,0.5)',
+                                shadowBlur: 10
+                            } 
+                        },
+                        { 
+                            value: 28, 
+                            name: '良好', 
+                            itemStyle: { 
+                                color: '#00d4ff',
+                                shadowColor: 'rgba(0,212,255,0.5)',
+                                shadowBlur: 10
+                            } 
+                        },
+                        { 
+                            value: 25, 
+                            name: '中等', 
+                            itemStyle: { 
+                                color: '#ffaa00',
+                                shadowColor: 'rgba(255,170,0,0.5)',
+                                shadowBlur: 10
+                            } 
+                        },
+                        { 
+                            value: 12, 
+                            name: '待提高', 
+                            itemStyle: { 
+                                color: '#ff6b6b',
+                                shadowColor: 'rgba(255,107,107,0.5)',
+                                shadowBlur: 10
+                            } 
+                        }
+                    ],
+                    label: { 
+                        color: '#fff',
+                        fontSize: 12,
+                        fontWeight: 'bold'
+                    },
+                    labelLine: { lineStyle: { color: '#8cc8ff' } },
+                    animation: true,
+                    animationDuration: 3000,
+                    animationType: 'expansion'
+                }]
+            };
+            gradeChart.setOption(gradeOption);
+        }
+        
+        // 动态更新数据
+        function updateData() {
+            // 更新统计数字
+            const elements = ['totalStudents', 'totalTeachers', 'totalCourses', 'totalExams'];
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                const currentValue = parseInt(element.textContent.replace(',', ''));
+                const newValue = currentValue + Math.floor(Math.random() * 20) - 10;
+                element.textContent = Math.max(0, newValue).toLocaleString();
+            });
+            
+            // 更新系统状态
+            const cpuUsage = Math.floor(Math.random() * 30) + 60;
+            const memoryUsage = Math.floor(Math.random() * 25) + 55;
+            const networkUsage = Math.floor(Math.random() * 40) + 30;
+            
+            document.getElementById('cpuUsage').textContent = cpuUsage + '%';
+            document.getElementById('memoryUsage').textContent = memoryUsage + '%';
+            document.getElementById('networkUsage').textContent = networkUsage + '%';
+            
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars[0].style.width = cpuUsage + '%';
+            progressBars[1].style.width = memoryUsage + '%';
+            progressBars[2].style.width = networkUsage + '%';
+        }
+        
+        // 初始化
+        window.onload = function() {
+            initParticles();
+            initCharts();
+            
+            // 定时更新数据
+            setInterval(updateData, 4000);
+            
+            // 窗口大小改变时重新调整图表
+            window.addEventListener('resize', function() {
+                echarts.getInstanceByDom(document.getElementById('trendChart'))?.resize();
+                echarts.getInstanceByDom(document.getElementById('performanceChart'))?.resize();
+                echarts.getInstanceByDom(document.getElementById('gradeChart'))?.resize();
+            });
+        };
+    </script>
+</body>
+</html>

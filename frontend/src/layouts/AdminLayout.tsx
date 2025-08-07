@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Layout, Menu, Button, Avatar, Input, Space, Typography, Badge } from 'antd'
+import { Layout, Menu, Button, Avatar, Input, Space, Typography, Badge, Dropdown, Tooltip } from 'antd'
 import {
   DashboardOutlined,
   UserOutlined,
@@ -14,6 +14,10 @@ import {
   SearchOutlined,
   BellOutlined,
   ShareAltOutlined,
+  DownOutlined,
+  GlobalOutlined,
+  QuestionCircleOutlined,
+  SunOutlined,
 } from '@ant-design/icons'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
@@ -22,27 +26,7 @@ import './AdminLayout.css'
 const { Header, Sider, Content } = Layout
 const { Text } = Typography
 
-// 侧边栏头部组件
-const SiderHeader = ({ user }: { user: any }) => (
-  <div className="admin-sider-header">
-    <Avatar 
-      size={48} 
-      icon={<UserOutlined />}
-      style={{ 
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: '#fff'
-      }}
-    />
-    <div className="user-profile">
-      <Text strong className="user-name">
-        {user?.display_name || 'Admin User'}
-      </Text>
-      <Text type="secondary" className="user-role">
-        {user?.role === '管理员' ? 'Pro Member' : user?.role}
-      </Text>
-    </div>
-  </div>
-)
+// 侧边栏头部组件 - 已移除用户头像和信息
 
 const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false)
@@ -71,7 +55,6 @@ const AdminLayout: React.FC = () => {
       icon: <FileTextOutlined />,
       label: '资源管理',
     },
-
     {
       key: '/admin/analytics',
       icon: <BarChartOutlined />,
@@ -102,17 +85,6 @@ const AdminLayout: React.FC = () => {
         collapsible
         collapsed={collapsed}
       >
-        <SiderHeader user={user} />
-        
-        <div className="sider-search">
-          <Input 
-            prefix={<SearchOutlined style={{ color: '#8c8c8c' }} />} 
-            placeholder="搜索..." 
-            size="large"
-            style={{ borderRadius: 12 }}
-          />
-        </div>
-
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
@@ -143,43 +115,137 @@ const AdminLayout: React.FC = () => {
               className="trigger-button"
             />
             <div className="page-title">
-              <Text strong style={{ fontSize: 18 }}>
+              <Text strong style={{ fontSize: 18, color: '#1a1a1a' }}>
                 {menuItems.find(item => item.key === location.pathname)?.label || '仪表板'}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>
+                {new Date().toLocaleDateString('zh-CN', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  weekday: 'long'
+                })}
               </Text>
             </div>
           </div>
 
-          <Space align="center" size="large" className="header-right">
-            <Button 
-              type="text" 
-              icon={<ShareAltOutlined />}
-              className="header-action-button"
+          <Space align="center" size="middle" className="header-right">
+            {/* 搜索框 */}
+            <Input
+              placeholder="全局搜索..."
+              prefix={<SearchOutlined style={{ color: '#8c8c8c' }} />}
+              style={{
+                width: 240,
+                borderRadius: 20,
+                backgroundColor: '#f8f9ff',
+                border: '1px solid #e8e9ff'
+              }}
+              size="middle"
+            />
+
+            {/* 工具按钮组 */}
+            <Space size="small">
+              <Tooltip title="帮助中心">
+                <Button
+                  type="text"
+                  icon={<QuestionCircleOutlined />}
+                  className="header-action-button"
+                  shape="circle"
+                />
+              </Tooltip>
+
+              <Tooltip title="主题切换">
+                <Button
+                  type="text"
+                  icon={<SunOutlined />}
+                  className="header-action-button"
+                  shape="circle"
+                />
+              </Tooltip>
+
+              <Tooltip title="语言设置">
+                <Button
+                  type="text"
+                  icon={<GlobalOutlined />}
+                  className="header-action-button"
+                  shape="circle"
+                />
+              </Tooltip>
+
+              <Tooltip title="通知中心">
+                <Badge count={5} size="small" offset={[-2, 2]}>
+                  <Button
+                    type="text"
+                    icon={<BellOutlined />}
+                    className="header-action-button"
+                    shape="circle"
+                  />
+                </Badge>
+              </Tooltip>
+            </Space>
+
+            {/* 在线用户 */}
+            <div className="online-users">
+              <Text type="secondary" style={{ fontSize: 12, marginRight: 8 }}>
+                在线: 24人
+              </Text>
+              <Avatar.Group max={{ count: 4 }} size="small">
+                <Avatar style={{ backgroundColor: '#f56a00' }}>张</Avatar>
+                <Avatar style={{ backgroundColor: '#87d068' }}>李</Avatar>
+                <Avatar style={{ backgroundColor: '#1890ff' }}>王</Avatar>
+                <Avatar style={{ backgroundColor: '#722ed1' }}>赵</Avatar>
+                <Avatar style={{ backgroundColor: '#eb2f96' }}>+20</Avatar>
+              </Avatar.Group>
+            </div>
+
+            {/* 用户菜单 */}
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: 'profile',
+                    label: '个人资料',
+                    icon: <UserOutlined />,
+                  },
+                  {
+                    key: 'settings',
+                    label: '账户设置',
+                    icon: <SettingOutlined />,
+                  },
+                  {
+                    type: 'divider',
+                  },
+                  {
+                    key: 'logout',
+                    label: '退出登录',
+                    icon: <LogoutOutlined />,
+                    onClick: handleLogout,
+                  },
+                ],
+              }}
+              placement="bottomRight"
+              arrow
             >
-              分享
-            </Button>
-            
-            <Badge count={3} size="small">
-              <Button 
-                type="text" 
-                icon={<BellOutlined />}
-                className="header-action-button"
-              />
-            </Badge>
-
-            <Avatar.Group maxCount={3} size="small">
-              <Avatar style={{ backgroundColor: '#f56a00' }}>A</Avatar>
-              <Avatar style={{ backgroundColor: '#87d068' }}>B</Avatar>
-              <Avatar style={{ backgroundColor: '#1890ff' }}>C</Avatar>
-            </Avatar.Group>
-
-                         <Avatar 
-               size={36}
-               icon={<UserOutlined />}
-               style={{ 
-                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                 color: '#fff'
-               }}
-             />
+              <div className="user-dropdown">
+                <Avatar
+                  size={36}
+                  icon={<UserOutlined />}
+                  style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: '#fff'
+                  }}
+                />
+                <div className="user-info">
+                  <Text strong style={{ fontSize: 14, color: '#1a1a1a' }}>
+                    {user?.display_name || 'Admin'}
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    管理员
+                  </Text>
+                </div>
+                <DownOutlined style={{ fontSize: 12, color: '#8c8c8c' }} />
+              </div>
+            </Dropdown>
           </Space>
         </Header>
 
