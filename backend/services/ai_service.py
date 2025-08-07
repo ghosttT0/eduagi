@@ -5,6 +5,7 @@ AI服务集成模块
 
 import json
 import asyncio
+import re
 from typing import Dict, List, Any, Optional
 import httpx
 from pydantic import BaseModel
@@ -13,12 +14,17 @@ from datetime import datetime
 
 # AI服务配置
 class AIConfig:
-    # 通义千问配置
+    # DeepSeek配置
+    DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+    DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1/chat/completions"
+
+    # 通义千问配置（仅用于视频分析）
     QWEN_API_KEY = os.getenv("QWEN_API_KEY", "")
     QWEN_BASE_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
-    
+
     # 模型配置
-    DEFAULT_MODEL = "qwen-turbo"
+    DEFAULT_MODEL = "deepseek-chat"  # DeepSeek主模型
+    VIDEO_MODEL = "qwen-turbo"       # 视频分析专用模型
     MAX_TOKENS = 2000
     TEMPERATURE = 0.7
 
@@ -36,7 +42,7 @@ class AIResponse(BaseModel):
 
 class AIService:
     """AI服务主类"""
-    
+
     def __init__(self):
         self.client = httpx.AsyncClient(timeout=60.0)
 
@@ -94,423 +100,326 @@ class AIService:
             model="mock-model",
             timestamp=datetime.now()
         )
-        
-    async def call_qwen_api(self, prompt: str, **kwargs) -> AIResponse:
-        """调用通义千问API"""
 
-        # 检查API密钥
-        if not AIConfig.QWEN_API_KEY:
-            print("警告：未配置QWEN_API_KEY，使用模拟回复")
+    async def call_deepseek_api(self, prompt: str) -> AIResponse:
+        """调用DeepSeek API"""
+        # 如果未配置API密钥，返回模拟回复
+        if not AIConfig.DEEPSEEK_API_KEY:
             return self._get_mock_response(prompt)
 
         headers = {
-            "Authorization": f"Bearer {AIConfig.QWEN_API_KEY}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {AIConfig.DEEPSEEK_API_KEY}"
         }
-        
-        data = {
-            "model": kwargs.get("model", AIConfig.DEFAULT_MODEL),
-            "input": {
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
-            },
+
+        payload = {
+            "model": AIConfig.DEFAULT_MODEL,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": AIConfig.MAX_TOKENS,
+            "temperature": AIConfig.TEMPERATURE
+        }
+
+        try:
+            response = await self.client.post(
+                AIConfig.DEEPSEEK_BASE_URL,
+                headers=headers,
+                json=payload
+            )
+            response.raise_for_status()
+
+            data = response.json()
+            content = data["choices"][0]["message"]["content"]
+            usage = data.get("usage", {})
+
+            return AIResponse(
+                content=content,
+                usage=usage,
+                model=data.get("model", AIConfig.DEFAULT_MODEL),
+                timestamp=datetime.now()
+            )
+        except Exception as e:
+            print(f"DeepSeek API调用失败: {e}")
+            return self._get_mock_response(prompt)
+
+    async def call_qwen_api(self, prompt: str) -> AIResponse:
+        """调用通义千问API"""
+        if not AIConfig.QWEN_API_KEY:
+            return self._get_mock_response(prompt)
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {AIConfig.QWEN_API_KEY}"
+        }
+
+        payload = {
+            "model": AIConfig.VIDEO_MODEL,
+            "input": {"messages": [{"role": "user", "content": prompt}]},
             "parameters": {
-                "max_tokens": kwargs.get("max_tokens", AIConfig.MAX_TOKENS),
-                "temperature": kwargs.get("temperature", AIConfig.TEMPERATURE)
+                "max_tokens": AIConfig.MAX_TOKENS,
+                "temperature": AIConfig.TEMPERATURE
             }
         }
-        
+
         try:
             response = await self.client.post(
                 AIConfig.QWEN_BASE_URL,
                 headers=headers,
-                json=data
+                json=payload
             )
             response.raise_for_status()
-            
-            result = response.json()
-            
-            if result.get("output") and result["output"].get("text"):
-                return AIResponse(
-                    content=result["output"]["text"],
-                    usage=result.get("usage", {}),
-                    model=data["model"],
-                    timestamp=datetime.now()
-                )
-            else:
-                raise Exception(f"AI API返回异常: {result}")
-                
+
+            data = response.json()
+            content = data["output"]["text"]
+            usage = data.get("usage", {})
+
+            return AIResponse(
+                content=content,
+                usage=usage,
+                model=AIConfig.VIDEO_MODEL,
+                timestamp=datetime.now()
+            )
         except Exception as e:
-            print(f"AI API调用失败: {e}")
-            # 如果API调用失败，返回智能模拟响应
+            print(f"通义千问API调用失败: {e}")
             return self._get_mock_response(prompt)
-    
-    async def generate_teaching_plan(self, course_name: str, chapter: str, topic: str = None, 
-                                   class_hours: int = 2, teaching_time: int = 90) -> Dict[str, Any]:
-        """生成教学计划"""
-        
-        topic_text = topic if topic else f"{course_name} - {chapter} 整体大纲"
-        
-        prompt = f"""
-请为以下教学内容生成专业教案：
 
-课程名称：{course_name}
-章节：{chapter}
-教学主题：{topic_text}
-课时：{class_hours}
-授课时间：{teaching_time}分钟
-
-请生成包含以下内容的JSON格式教案：
-{{
-    "title": "教案标题",
-    "objectives": ["教学目标1", "教学目标2", "教学目标3"],
-    "key_points": ["重点1", "重点2", "重点3"],
-    "difficulties": ["难点1", "难点2"],
-    "teaching_methods": ["方法1", "方法2", "方法3"],
-    "content": "详细教学内容，包括引入、讲解、练习、总结等环节",
-    "assessment": "评估方案，包括课堂提问、作业、考试等",
-    "resources": ["教学资源1", "教学资源2"],
-    "homework": "课后作业安排"
-}}
-
-请确保内容专业、详细、实用。
-"""
-        
-        response = await self.call_qwen_api(prompt)
-        
-        try:
-            # 尝试解析JSON
-            content = response.content.strip()
-            if content.startswith("```json"):
-                content = content[7:-3]
-            elif content.startswith("```"):
-                content = content[3:-3]
-            
-            teaching_plan = json.loads(content)
-            return teaching_plan
-        except json.JSONDecodeError:
-            # 如果解析失败，返回结构化的默认内容
-            return {
-                "title": f"{course_name} - {chapter}教案",
-                "objectives": ["掌握基本概念", "理解核心原理", "能够实际应用"],
-                "key_points": ["概念定义", "原理分析", "应用场景"],
-                "difficulties": ["理论理解", "实践应用"],
-                "teaching_methods": ["讲授法", "案例分析", "实践操作"],
-                "content": f"关于{topic_text}的详细教学内容...\n\n{response.content}",
-                "assessment": "课堂提问、作业评估、实践考核",
-                "resources": ["教材", "课件", "实验环境"],
-                "homework": "完成相关练习题和实践作业"
-            }
-    
-    async def generate_mindmap(self, topic: str, description: str = None) -> Dict[str, Any]:
-        """生成思维导图"""
-        
-        prompt = f"""
-请为主题"{topic}"生成一个结构化的思维导图。
-
-{f"描述：{description}" if description else ""}
-
-请生成JSON格式的思维导图数据，结构如下：
-{{
-    "name": "主题名称",
-    "children": [
-        {{
-            "name": "分支1",
-            "children": [
-                {{"name": "子节点1"}},
-                {{"name": "子节点2"}},
-                {{"name": "子节点3"}}
-            ]
-        }},
-        {{
-            "name": "分支2", 
-            "children": [
-                {{"name": "子节点1"}},
-                {{"name": "子节点2"}}
-            ]
-        }}
-    ]
-}}
-
-请确保思维导图层次清晰，内容丰富，至少包含3个主要分支，每个分支至少3个子节点。
-"""
-        
-        response = await self.call_qwen_api(prompt)
-        
-        try:
-            content = response.content.strip()
-            if content.startswith("```json"):
-                content = content[7:-3]
-            elif content.startswith("```"):
-                content = content[3:-3]
-            
-            mindmap_data = json.loads(content)
-            return mindmap_data
-        except json.JSONDecodeError:
-            # 返回默认的思维导图结构
-            return {
-                "name": topic,
-                "children": [
-                    {
-                        "name": "基本概念",
-                        "children": [
-                            {"name": "定义"},
-                            {"name": "特点"},
-                            {"name": "分类"}
-                        ]
-                    },
-                    {
-                        "name": "核心原理",
-                        "children": [
-                            {"name": "工作机制"},
-                            {"name": "算法流程"},
-                            {"name": "技术要点"}
-                        ]
-                    },
-                    {
-                        "name": "实际应用",
-                        "children": [
-                            {"name": "应用场景"},
-                            {"name": "案例分析"},
-                            {"name": "发展趋势"}
-                        ]
-                    }
-                ]
-            }
-    
-    async def generate_exam_questions(self, exam_scope: str, num_mcq: int = 5, 
-                                    num_saq: int = 3, num_code: int = 1) -> Dict[str, Any]:
-        """生成考试题目"""
-        
-        prompt = f"""
-请根据考试范围"{exam_scope}"生成试卷，包含：
-- {num_mcq}道选择题
-- {num_saq}道简答题  
-- {num_code}道编程题
-
-请生成JSON格式的试卷数据：
-{{
-    "title": "试卷标题",
-    "questions": [
-        {{
-            "type": "multiple_choice",
-            "question_text": "题目内容",
-            "options": ["A. 选项1", "B. 选项2", "C. 选项3", "D. 选项4"],
-            "answer": "A",
-            "explanation": "答案解析"
-        }},
-        {{
-            "type": "short_answer", 
-            "question_text": "题目内容",
-            "answer": "参考答案",
-            "points": 10
-        }},
-        {{
-            "type": "programming",
-            "question_text": "编程题目描述",
-            "answer": "参考代码",
-            "test_cases": ["测试用例1", "测试用例2"],
-            "points": 20
-        }}
-    ]
-}}
-"""
-        
-        response = await self.call_qwen_api(prompt)
-        
-        try:
-            content = response.content.strip()
-            if content.startswith("```json"):
-                content = content[7:-3]
-            elif content.startswith("```"):
-                content = content[3:-3]
-            
-            exam_data = json.loads(content)
-            return exam_data
-        except json.JSONDecodeError:
-            # 返回默认的试卷结构
-            return {
-                "title": f"{exam_scope}考试试卷",
-                "questions": [
-                    {
-                        "type": "multiple_choice",
-                        "question_text": f"关于{exam_scope}，以下说法正确的是？",
-                        "options": ["A. 选项1", "B. 选项2", "C. 选项3", "D. 选项4"],
-                        "answer": "A",
-                        "explanation": "这是正确答案的解析"
-                    }
-                ]
-            }
-    
-    async def analyze_video(self, video_title: str, video_description: str = None) -> str:
-        """分析视频内容"""
-        
-        prompt = f"""
-请对视频"{video_title}"进行AI分析。
-
-{f"视频描述：{video_description}" if video_description else ""}
-
-请从以下几个方面进行分析：
-1. 核心主题和内容概要
-2. 主要知识点梳理
-3. 学习重点和难点
-4. 适合的学习对象
-5. 学习建议和方法
-6. 相关知识扩展
-
-请提供详细、专业的分析报告。
-"""
-        
-        response = await self.call_qwen_api(prompt)
-        return response.content
-    
     async def chat_with_student(self, question: str, ai_mode: str = "直接问答", 
-                              chat_history: List[tuple] = None) -> str:
-        """与学生对话"""
-        
+                               chat_history: List = None) -> str:
+        """与学生聊天"""
+        if chat_history is None:
+            chat_history = []
+
+        # 根据AI模式构建提示词
         mode_prompts = {
-            "直接问答": """你是一位资深的计算机科学教授，拥有丰富的教学经验。请以专业、耐心、循序渐进的方式回答学生的问题。
-
-要求：
-1. 回答要准确、专业，但用通俗易懂的语言
-2. 提供具体的例子和代码示例（如果适用）
-3. 指出常见的误区和注意事项
-4. 给出进一步学习的建议
-5. 回答要有逻辑层次，便于理解""",
-
-            "苏格拉底式引导": """你是苏格拉底式的智慧导师，擅长通过提问来引导学生自主思考和发现答案。
-
-教学原则：
-1. 不要直接给出答案，而是通过一系列递进的问题引导学生思考
-2. 每次提出2-3个相关问题，帮助学生分析问题的本质
-3. 根据学生的回答，继续深入提问
-4. 鼓励学生从不同角度思考问题
-5. 最终让学生自己得出结论，增强理解和记忆
-
-请用温和、鼓励的语气，让学生感受到思考的乐趣。""",
-
-            "关联知识分析": """你是一位知识图谱专家，擅长分析知识点之间的关联关系，帮助学生构建完整的知识体系。
-
-分析要求：
-1. 识别问题涉及的核心知识点
-2. 分析这些知识点的前置依赖关系
-3. 指出相关的扩展知识点
-4. 说明知识点在实际应用中的联系
-5. 提供学习路径建议，帮助学生系统掌握
-
-请用结构化的方式呈现知识关联，帮助学生建立知识网络。"""
+            "直接问答": f"请直接、清晰地回答以下问题：{question}",
+            "苏格拉底式引导": f"请扮演苏格拉底，不要直接回答问题，而是通过反问来引导我思考这个问题：{question}",
+            "关联知识分析": f"请分析这个问题 '{question}' 主要涉及了哪些关联知识点，并对这些关联点进行简要说明。"
         }
-        
-        context = ""
-        if chat_history:
-            context = "\n\n对话历史：\n"
-            for q, a in chat_history[-5:]:  # 只取最近5轮对话
-                context += f"学生：{q}\nAI：{a}\n\n"
-        
-        prompt = f"""
-{mode_prompts.get(ai_mode, mode_prompts["直接问答"])}
 
-【学习背景】
-这是一位计算机科学专业的大学生，正在学习相关课程。请根据学生的学习水平，提供适合的指导。
+        final_question = mode_prompts.get(ai_mode, question)
 
-{context}
-
-【学生问题】
-{question}
-
-【回答要求】
-- 语言要专业但易懂
-- 提供具体例子和实践建议
-- 如果是编程问题，请提供代码示例
-- 指出学习重点和常见误区
-- 给出后续学习建议
-
-请开始你的专业指导：
-"""
-        
-        response = await self.call_qwen_api(prompt)
+        # 调用AI服务
+        response = await self.call_deepseek_api(final_question)
         return response.content
-    
+
     async def generate_practice_question(self, topic: str) -> Dict[str, str]:
-        """生成练习题"""
-        
+        """生成练习题 - 根据新逻辑实现"""
+
         prompt = f"""
-请为主题"{topic}"生成一道练习题。
-
-要求：
-1. 题目要有一定的思考性和实用性
-2. 提供标准答案
-3. 适合学生练习和巩固知识
-
-请生成JSON格式：
-{{
-    "question_text": "题目内容",
-    "standard_answer": "标准答案"
-}}
+你是一位出题专家。请根据知识点"{topic}"，生成一道相关的简答题。
+你的回复必须是一个单一的JSON对象，包含 "question_text" (题目) 和 "standard_answer" (标准答案) 两个键。
+不要包含任何额外的解释。
 """
-        
-        response = await self.call_qwen_api(prompt)
-        
+
+        response = await self.call_deepseek_api(prompt)
+        result_text = response.content.strip()
+
+        # 改进的JSON解析逻辑
+        json_data = None
+
+        # 方法1: 直接解析
         try:
-            content = response.content.strip()
-            if content.startswith("```json"):
-                content = content[7:-3]
-            elif content.startswith("```"):
-                content = content[3:-3]
-            
-            question_data = json.loads(content)
-            return question_data
-        except json.JSONDecodeError:
-            return {
-                "question_text": f"请解释{topic}的核心概念和应用场景。",
-                "standard_answer": f"{topic}是一个重要的概念，其核心在于..."
+            json_data = json.loads(result_text)
+        except:
+            pass
+
+        # 方法2: 提取大括号内容并清理
+        if not json_data:
+            match = re.search(r'\{.*?\}', result_text, re.DOTALL)
+            if match:
+                try:
+                    json_str = match.group(0)
+                    # 清理常见问题
+                    json_str = json_str.replace('\n', ' ').replace('\r', ' ')
+                    json_str = re.sub(r'\s+', ' ', json_str)
+                    json_str = json_str.replace("'", '"')  # 单引号改双引号
+                    json_data = json.loads(json_str)
+                except:
+                    pass
+
+        # 方法3: 手动提取题目和答案
+        if not json_data:
+            question_match = re.search(r'题目[：:]\s*(.+?)(?=答案|$)', result_text, re.DOTALL | re.IGNORECASE)
+            answer_match = re.search(r'答案[：:]\s*(.+)', result_text, re.DOTALL | re.IGNORECASE)
+
+            if question_match and answer_match:
+                json_data = {
+                    "question_text": question_match.group(1).strip(),
+                    "standard_answer": answer_match.group(1).strip()
+                }
+
+        # 方法4: 默认题目（最后备选）
+        if not json_data:
+            json_data = {
+                "question_text": f"请详细解释{topic}的核心概念、原理和应用场景。",
+                "standard_answer": f"{topic}是一个重要的概念。请从定义、原理、特点、应用场景等方面进行详细阐述。"
             }
-    
+
+        # 最终验证和处理
+        if json_data:
+            # 确保必要字段存在，如果不存在则补充
+            if "question_text" not in json_data:
+                json_data["question_text"] = f"请详细解释{topic}的核心概念和应用。"
+            if "standard_answer" not in json_data:
+                json_data["standard_answer"] = f"{topic}是一个重要概念，需要深入理解。"
+
+            # 清理字段内容
+            json_data["question_text"] = str(json_data["question_text"]).strip()
+            json_data["standard_answer"] = str(json_data["standard_answer"]).strip()
+
+            # 确保内容不为空
+            if not json_data["question_text"]:
+                json_data["question_text"] = f"请解释{topic}的相关概念。"
+            if not json_data["standard_answer"]:
+                json_data["standard_answer"] = f"这是关于{topic}的重要知识点。"
+
+            return json_data
+        else:
+            # 如果所有方法都失败，创建一个基本的默认题目
+            return {
+                "question_text": f"请详细说明{topic}的定义、特点和应用场景。",
+                "standard_answer": f"{topic}的定义：[请根据具体内容填写]\n特点：[请列举主要特点]\n应用场景：[请说明实际应用]"
+            }
+
     async def evaluate_practice_answer(self, question: str, standard_answer: str,
                                      student_answer: str, topic: str = "") -> str:
         """评估练习答案 - 恢复以前详细的教学反馈格式"""
 
         prompt = f"""
-你是一位经验丰富的教学助手和智能导师。请对比标准答案和学生的回答，并提供一份内容饱满、富有建设性的详细反馈。
-
-**练习信息：**
-- 考察知识点：{topic if topic else "综合知识"}
-- 题目：{question}
-- 标准答案：{standard_answer}
-- 学生回答：{student_answer}
-
-**反馈要求：**
-请按照以下结构提供详细的教学反馈：
-
-1. **回答亮点分析**：首先指出学生回答中的优秀之处、正确理解的部分，给予积极鼓励
-
-2. **知识掌握评估**：分析学生对该知识点的理解程度，是否抓住了核心概念
-
-3. **不足之处指正**：具体指出回答中的错误、遗漏或不够准确的地方
-
-4. **改进建议**：提供具体的学习建议，告诉学生如何提高和完善答案
-
-5. **知识拓展**：补充相关的重要知识点，帮助学生建立更完整的知识体系
-
-6. **学习指导**：给出后续学习的方向和建议
-
-7. **综合评分**：给出1-10分的评分（10分为满分），并详细说明评分理由
-
-**注意事项：**
-- 语言要温和鼓励，既要指出问题也要给予肯定
-- 反馈要具体详细，避免空泛的评价
-- 要有教育价值，真正帮助学生提高
-- 评分要公正合理，有明确的评分依据
-
-请开始你的详细反馈：
+你是一位教学助手。请对比标准答案和学生的回答，并提供一份内容饱满、富有建设性的反馈。
+- 考察知识点: "{topic if topic else '未知'}"
+- 题目是: "{question}"
+- 标准答案是: "{standard_answer}"
+- 学生的回答是: "{student_answer}"
+你的反馈应首先指出学生回答的亮点，然后点明不足之处或可以改进的地方，最后进行总结并给出你觉得可以的评分(10分为满分）。
 """
 
-        response = await self.call_qwen_api(prompt)
+        response = await self.call_deepseek_api(prompt)
         return response.content
+
+    async def generate_teaching_plan(self, topic: str, duration: int, 
+                                   students_level: str) -> str:
+        """生成教学计划"""
+        prompt = f"""
+        请为"{topic}"设计一个{duration}分钟的教学计划。
+        学生水平：{students_level}
+
+        请包含以下内容：
+        1. 教学目标
+        2. 教学重难点
+        3. 教学过程（时间分配）
+        4. 教学方法
+        5. 教学评价
+        """
+
+        response = await self.call_deepseek_api(prompt)
+        return response.content
+
+    async def generate_mind_map(self, topic: str) -> Dict[str, Any]:
+        """生成知识图谱"""
+        prompt = f"""
+        请为"{topic}"生成一个知识图谱。
+
+        请以JSON格式返回，包含以下结构：
+        {{
+            "topic": "主题",
+            "subtopics": [
+                {{
+                    "name": "子主题1",
+                    "description": "描述",
+                    "concepts": ["概念1", "概念2"]
+                }},
+                ...
+            ]
+        }}
+        """
+
+        response = await self.call_deepseek_api(prompt)
+
+        try:
+            content = response.content.strip()
+            if content.startswith("```json"):
+                content = content[7:-3]
+            elif content.startswith("```"):
+                content = content[3:-3]
+
+            return json.loads(content)
+        except json.JSONDecodeError:
+            return {
+                "topic": topic,
+                "subtopics": [
+                    {
+                        "name": "基本概念",
+                        "description": "基本概念和定义",
+                        "concepts": ["概念1", "概念2"]
+                    }
+                ]
+            }
+
+    async def generate_exam_questions(self, topic: str, count: int, 
+                                    difficulty: str, question_types: List[str]) -> List[Dict]:
+        """生成考试题目"""
+        prompt = f"""
+        请为"{topic}"生成{count}道{difficulty}难度的考试题目。
+        题目类型：{', '.join(question_types)}
+
+        请以JSON数组格式返回，每个题目包含以下字段：
+        - question_text: 题目内容
+        - question_type: 题目类型
+        - options: 选项（如果是选择题）
+        - correct_answer: 正确答案
+        - difficulty: 难度
+        """
+
+        response = await self.call_deepseek_api(prompt)
+
+        try:
+            content = response.content.strip()
+            if content.startswith("```json"):
+                content = content[7:-3]
+            elif content.startswith("```"):
+                content = content[3:-3]
+
+            return json.loads(content)
+        except json.JSONDecodeError:
+            # 返回默认题目
+            return [
+                {
+                    "question_text": f"请解释{topic}的基本概念。",
+                    "question_type": "简答题",
+                    "correct_answer": f"{topic}的基本概念是...",
+                    "difficulty": difficulty
+                }
+            ]
+
+    async def analyze_video(self, video_path: str) -> Dict[str, Any]:
+        """分析视频内容"""
+        # 这里简化实现，实际应用中可能需要先提取视频音频，然后转文字，再分析
+        prompt = f"""
+        请分析以下视频内容，提取关键知识点：
+
+        视频路径：{video_path}
+
+        请返回以下信息：
+        1. 视频主题
+        2. 关键知识点
+        3. 教学重点和难点
+        4. 建议的学习方法
+        """
+
+        response = await self.call_qwen_api(prompt)
+
+        # 简化返回结果
+        return {
+            "video_path": video_path,
+            "analysis": response.content,
+            "key_points": ["知识点1", "知识点2"],
+            "difficulty_points": ["难点1", "难点2"]
+        }
+
+    async def close(self):
+        """关闭连接"""
+        await self.client.aclose()
+
 
 # 创建全局AI服务实例
 ai_service = AIService()

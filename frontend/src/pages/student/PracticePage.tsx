@@ -4,59 +4,50 @@ import {
   Form,
   Input,
   Button,
-  Select,
   Typography,
   Space,
-  Radio,
   message,
   Row,
   Col,
-  Statistic,
-  Progress,
-  Tag,
+  Spin,
   Alert,
-  Divider
+  Divider,
+  Tabs,
+  Checkbox
 } from 'antd'
 import {
   PlayCircleOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined,
-  BulbOutlined,
-  TrophyOutlined,
   BookOutlined,
-  CodeOutlined
+  BulbOutlined,
+  EditOutlined,
+  SearchOutlined
 } from '@ant-design/icons'
 import { studentAPI } from '../../services/api'
 
 const { Title, Text, Paragraph } = Typography
 const { TextArea } = Input
-const { Option } = Select
+const { TabPane } = Tabs
 
 interface PracticeQuestion {
-  question: string
-  question_type: 'mcq' | 'saq' | 'code'
-  options?: string[]
-  correct_answer?: string
+  question_text: string
+  standard_answer: string
   topic: string
 }
 
 interface PracticeFeedback {
   feedback: string
-  score: number
+  score?: number
 }
 
 const PracticePage: React.FC = () => {
   const [form] = Form.useForm()
-  const [currentQuestion, setCurrentQuestion] = useState<PracticeQuestion | null>(null)
-  const [userAnswer, setUserAnswer] = useState('')
-  const [feedback, setFeedback] = useState<PracticeFeedback | null>(null)
+  const [practiceQuestion, setPracticeQuestion] = useState<PracticeQuestion | null>(null)
+  const [practiceFeedback, setPracticeFeedback] = useState<PracticeFeedback | null>(null)
   const [generating, setGenerating] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [practiceStats, setPracticeStats] = useState({
-    totalQuestions: 0,
-    correctAnswers: 0,
-    averageScore: 0
-  })
+  const [debugMode, setDebugMode] = useState(false)
+  const [rawAIResponse, setRawAIResponse] = useState('')
 
   const handleGenerateQuestion = async (values: any) => {
     setGenerating(true)
