@@ -1,3 +1,13 @@
+# 环境变量文件 - 包含敏感信息，不要提交
+.env
+backend/.env
+frontend/.env
+*.env
+.env.local
+.env.development
+.env.test
+.env.production
+
 # Python
 __pycache__/
 *.py[cod]
@@ -19,19 +29,29 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+
+# 虚拟环境
 venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
 # Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.npm
+.yarn-integrity
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# 前端构建文件
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
 
 # IDE
 .vscode/
@@ -40,126 +60,98 @@ yarn-error.log*
 *.swo
 *~
 
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Logs
-logs/
-*.log
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# Temporary folders
-tmp/
-temp/
-
-# Database files
+# 数据库
 *.db
 *.sqlite
 *.sqlite3
 
-# Upload directories
-upload/
-data/
+# 日志
+*.log
+logs/
 
-# Virtual environments
-venv/
-ENV/
-env/
-.venv/
+# 临时文件
+temp/
+tmp/
+.tmp/
+*.tmp
+*.temp
 
-# Build outputs
-frontend/dist/
-frontend/build/
+# 上传文件
+uploads/
+video_uploads/
+backend/uploads/
+frontend/public/uploads/
 
-# Large files
-*.pdf
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 测试文件
+test_*.py
+*_test.py
+__tests__/
+
+# 配置文件（包含敏感信息）
+config.json
+secrets.json
+api_keys.json
+
+# 缓存文件
+.cache/
+.parcel-cache/
+
+# 覆盖率报告
+coverage/
+.nyc_output/
+
+# 大型文件
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# 字体文件（如果不想提交）
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# 图片文件（如果不想提交）
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.svg
+
+# 视频文件
 *.mp4
 *.avi
 *.mov
 *.wmv
+*.flv
 
-# Development files
-deploy-to-spaces.sh
-deploy-to-spaces.ps1
-deploy-simple.ps1
-deploy-windows.bat
-deploy.sh
-quick-deploy.sh
-docker-compose.yml
-frontend/Dockerfile
-backend/Dockerfile
-frontend/nginx.conf
-nginx.conf
-DEPLOYMENT.md
-README-DEPLOY.md
-QUICK-DEPLOY.md
-deploy-render.bat 
+# 音频文件
+*.mp3
+*.wav
+*.flac
+*.aac
+
+# 文档文件
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+
+# 备份文件
+*.bak
+*.backup
+*~
+
+# 特定项目文件
+detailed_grading_results.json
+grade_backup.py 
