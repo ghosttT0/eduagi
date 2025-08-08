@@ -203,69 +203,104 @@ class AIService:
 
     async def generate_practice_question(self, topic: str) -> Dict[str, str]:
         """生成练习题 - 健壮的智能解析逻辑"""
-
-        # 改进的Prompt：更明确的指令
+        
+        import random
+        
+        # 随机选择题目类型和风格，增加多样性
+        question_types = [
+            "概念理解题", "应用分析题", "对比分析题", "案例分析题", "实践操作题"
+        ]
+        
+        difficulty_levels = ["基础", "中等", "进阶"]
+        
+        selected_type = random.choice(question_types)
+        selected_difficulty = random.choice(difficulty_levels)
+        
+        # 改进的Prompt：更明确的指令和多样性要求
         prompt = f"""
-你是一位出题专家。请根据知识点"{topic}"生成一道练习题。
+你是一位资深的出题专家和教学设计师，拥有丰富的教育经验。请根据知识点"{topic}"生成一道{selected_difficulty}难度的{selected_type}。
 
-要求：
-1. 题目应具有思考性，能够检验学生对该知识点的理解
-2. 标准答案要详细且准确
-3. 回复格式必须严格按照以下JSON格式：
+出题要求：
+1. 题目应具有思考性和实用性，能够检验学生对该知识点的深度理解
+2. 避免简单的记忆性题目，注重理解和应用能力考查
+3. 题目表述要清晰、准确，符合学术规范
+4. 标准答案要详细、完整，包含解题思路和关键要点
+5. 每次生成的题目都要有所不同，避免重复和模板化
+
+题目类型说明：
+- 概念理解题：考查对基本概念的理解和掌握
+- 应用分析题：考查知识点的实际应用能力
+- 对比分析题：考查不同概念或方法的异同点
+- 案例分析题：通过具体案例考查分析解决问题的能力
+- 实践操作题：考查动手实践和操作技能
+
+请严格按照以下JSON格式回复，不要包含任何其他内容：
 
 {{
     "question_text": "这里是题目内容",
-    "standard_answer": "这里是详细的标准答案"
+    "standard_answer": "这里是详细的标准答案，包含解题思路和要点分析"
 }}
 
-请直接返回JSON，不要包含任何其他文字。
+现在请开始出题：
 """
 
         response = await self.call_deepseek_api(prompt)
         result_text = response.content.strip()
 
-        # 多层降级的智能解析逻辑
+        # 解析AI回复的多层逻辑保持不变
         json_data = None
 
         # 第一层：直接JSON解析
         try:
-            json_data = json.loads(result_text)
-            if self._validate_question_json(json_data):
+            if result_text.startswith("```json"):
+                json_content = result_text[7:-3].strip()
+            elif result_text.startswith("```"):
+                json_content = result_text[3:-3].strip()
+            else:
+                json_content = result_text
+
+            json_data = json.loads(json_content)
+            if "question_text" in json_data and "standard_answer" in json_data:
                 return self._clean_question_data(json_data, topic)
         except json.JSONDecodeError:
             pass
 
-        # 第二层：提取代码块中的JSON
+        # 其他解析层级保持不变...
+        # 第二层：查找JSON块
         if not json_data:
-            code_block_patterns = [
-                r'```json\s*({.*?})\s*```',
-                r'```\s*({.*?})\s*```',
-                r'`({.*?})`'
-            ]
-
-            for pattern in code_block_patterns:
-                match = re.search(pattern, result_text, re.DOTALL | re.IGNORECASE)
-                if match:
-                    try:
-                        json_str = match.group(1).strip()
-                        json_data = json.loads(json_str)
-                        if self._validate_question_json(json_data):
-                            return self._clean_question_data(json_data, topic)
-                    except:
-                        continue
-
-        # 第三层：查找任何大括号包裹的内容
-        if not json_data:
-            brace_matches = re.findall(r'{[^{}]*}', result_text, re.DOTALL)
-            for match in brace_matches:
+            json_pattern = r'\{[^{}]*"question_text"[^{}]*"standard_answer"[^{}]*\}'
+            json_matches = re.findall(json_pattern, result_text, re.DOTALL)
+            
+            for match in json_matches:
                 try:
-                    # 清理和标准化JSON字符串
-                    json_str = self._normalize_json_string(match)
-                    json_data = json.loads(json_str)
-                    if self._validate_question_json(json_data):
+                    json_data = json.loads(match)
+                    if "question_text" in json_data and "standard_answer" in json_data:
                         return self._clean_question_data(json_data, topic)
-                except:
+                except json.JSONDecodeError:
                     continue
+
+        # 第三层：多行JSON解析
+        if not json_data:
+            lines = result_text.split('\n')
+            json_lines = []
+            in_json = False
+            
+            for line in lines:
+                if '{' in line:
+                    in_json = True
+                if in_json:
+                    json_lines.append(line)
+                if '}' in line and in_json:
+                    break
+            
+            if json_lines:
+                try:
+                    json_text = '\n'.join(json_lines)
+                    json_data = json.loads(json_text)
+                    if "question_text" in json_data and "standard_answer" in json_data:
+                        return self._clean_question_data(json_data, topic)
+                except json.JSONDecodeError:
+                    pass
 
         # 第四层：关键词提取
         if not json_data:
@@ -291,8 +326,8 @@ class AIService:
                 }
                 return self._clean_question_data(json_data, topic)
 
-        # 第五层：最后的默认题目
-        return self._create_default_question(topic)
+        # 第五层：最后的默认题目（也要多样化）
+        return self._create_diverse_default_question(topic, selected_type, selected_difficulty)
 
     def _validate_question_json(self, data: Dict) -> bool:
         """验证题目JSON的有效性"""
@@ -345,11 +380,37 @@ class AIService:
             "standard_answer": standard_answer
         }
 
-    def _create_default_question(self, topic: str) -> Dict[str, str]:
-        """创建默认题目"""
-        return {
-            "question_text": f"请详细阐述{topic}的核心概念、主要特点和实际应用场景。",
-            "standard_answer": f"""关于{topic}：
+    def _create_diverse_default_question(self, topic: str, question_type: str, difficulty: str) -> Dict[str, str]:
+        """创建多样化默认题目"""
+        if question_type == "概念理解题":
+            return {
+                "question_text": f"请解释{topic}的基本概念。",
+                "standard_answer": f"{topic}的基本概念是..."
+            }
+        elif question_type == "应用分析题":
+            return {
+                "question_text": f"请举例说明{topic}在实际应用中的一个场景。",
+                "standard_answer": f"{topic}在实际应用中的一个场景是..."
+            }
+        elif question_type == "对比分析题":
+            return {
+                "question_text": f"请比较{topic}与另一个相关概念的区别和联系。",
+                "standard_answer": f"{topic}与另一个相关概念的区别和联系是..."
+            }
+        elif question_type == "案例分析题":
+            return {
+                "question_text": f"请分析一个与{topic}相关的实际案例。",
+                "standard_answer": f"一个与{topic}相关的实际案例是..."
+            }
+        elif question_type == "实践操作题":
+            return {
+                "question_text": f"请设计一个与{topic}相关的实践操作步骤。",
+                "standard_answer": f"一个与{topic}相关的实践操作步骤是..."
+            }
+        else:
+            return {
+                "question_text": f"请详细阐述{topic}的核心概念、主要特点和实际应用场景。",
+                "standard_answer": f"""关于{topic}：
 
 1. **核心概念**：{topic}是[在此领域中的基本定义和核心思想]
 
@@ -363,7 +424,7 @@ class AIService:
    - 应用场景二：[具体说明]
 
 4. **学习要点**：建议重点理解其原理，并通过实践加深认识。"""
-        }
+            }
 
     async def evaluate_practice_answer(self, question: str, standard_answer: str,
                                      student_answer: str, topic: str = "") -> str:
