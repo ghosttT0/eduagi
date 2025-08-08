@@ -122,12 +122,18 @@ async def chat_with_ai(
         for chat in reversed(recent_chats):
             chat_history.append((chat.question, chat.answer))
         
-        # 调用AI服务生成回答
-        ai_answer = await ai_service.chat_with_student(
-            question=message.question,
-            ai_mode=message.ai_mode,
-            chat_history=chat_history
-        )
+        try:
+            # 调用AI服务生成回答
+            ai_answer = await ai_service.chat_with_student(
+                question=message.question,
+                ai_mode=message.ai_mode,
+                chat_history=chat_history
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"AI服务调用失败: {str(e)}。请检查API密钥配置。"
+            )
         
         # 验证AI回答质量
         if not ai_answer or len(ai_answer.strip()) < 10:
@@ -217,8 +223,14 @@ async def generate_practice_question(
         
         db.commit()
         
-        # 调用AI服务生成练习题
-        question_data = await ai_service.generate_practice_question(request.topic.strip())
+        try:
+            # 调用AI服务生成练习题
+            question_data = await ai_service.generate_practice_question(request.topic.strip())
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"AI服务调用失败: {str(e)}。请检查API密钥配置。"
+            )
         
         # 验证AI返回的数据质量
         if not isinstance(question_data, dict):
@@ -302,12 +314,18 @@ async def submit_practice_answer(
             raise HTTPException(status_code=400, detail="题目数据不完整")
         
         # 调用AI服务生成反馈
-        feedback_text = await ai_service.evaluate_practice_answer(
-            question=question_data.question_text,
-            standard_answer=question_data.standard_answer,
-            student_answer=answer.student_answer.strip(),
-            topic=getattr(question_data, 'topic', '')
-        )
+        try:
+            feedback_text = await ai_service.evaluate_practice_answer(
+                question=question_data.question_text,
+                standard_answer=question_data.standard_answer,
+                student_answer=answer.student_answer.strip(),
+                topic=getattr(question_data, 'topic', '')
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"AI服务调用失败: {str(e)}。请检查API密钥配置。"
+            )
         
         # 验证反馈质量
         if not feedback_text or len(feedback_text.strip()) < 20:

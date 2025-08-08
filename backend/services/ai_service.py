@@ -16,11 +16,11 @@ import requests
 # AI服务配置
 class AIConfig:
     # DeepSeek配置
-    DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "sk-6108402cc64449b2bba661b83051c10f")
+    DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
     DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1/chat/completions"
 
     # 通义千问配置（仅用于视频分析）
-    QWEN_API_KEY = os.getenv("QWEN_API_KEY", "sk-3834203e9fb24f3296edf89dbeca7c68")
+    QWEN_API_KEY = os.getenv("QWEN_API_KEY", "")
     QWEN_BASE_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
 
     # 模型配置
@@ -595,25 +595,32 @@ class AIService:
         response = await self.call_deepseek_api(prompt)
         return response.content
 
-    async def generate_teaching_plan(self, topic: str, duration: int, 
-                                   students_level: str) -> str:
+    async def generate_teaching_plan(self, course_name: str, chapter: str, topic: str = None,
+                                   class_hours: int = 2, teaching_time: int = 90) -> str:
         """生成教学计划"""
         prompt = f"""
-        请为"{topic}"设计一个{duration}分钟的教学计划。
-        学生水平：{students_level}
-
-        请包含以下内容：
-        1. 教学目标
-        2. 教学重难点
-        3. 教学过程（时间分配）
-        4. 教学方法
-        5. 教学评价
+        你是一位顶级的教学设计总监，正在为《{course_name}》课程撰写一份专业、详尽、内容丰富的教学教案。
+        你的任务是: 针对课程《{course_name}》中"{chapter}"章节，设计一份完整的教学方案。
+        
+        严格指令: 你的回复必须是单一、完整的JSON对象，不要有任何多余的解释。JSON对象必须包含以下键，每个键的值都必须是内容详实、逻辑严谨的字符串，可使用Markdown换行:
+        - `教学内容`: 详细阐述教学内容，而不仅仅是罗列标题。
+        - `教学目标`: 从"知识与技能"、"过程与方法"、"情感态度与价值观"三个维度详细描述教学目标。
+        - `教学重点`: 提炼出教学重点，并说明其重要性。
+        - `教学难点`: 分析教学难点，并提出具体的、可操作的突破策略。
+        - `教学设计`: 这是最重要的部分。请为每个环节（例如：导入、新授、练习、总结）都撰写详细的教师活动、学生互动和预计时间。内容必须丰富、饱满、具有可执行性。
+        - `教学反思与总结`: 设计几个有深度的启发性问题，供教师在课后进行教学反思。
+        
+        课程信息：
+        - 课程名称：{course_name}
+        - 章节：{chapter}
+        - 课时：{class_hours}课时
+        - 授课时间：{teaching_time}分钟
         """
 
         response = await self.call_deepseek_api(prompt)
         return response.content
 
-    async def generate_mind_map(self, topic: str) -> Dict[str, Any]:
+    async def generate_mind_map(self, topic: str, description: str = None) -> Dict[str, Any]:
         """生成知识图谱"""
         prompt = f"""
         请为"{topic}"生成一个知识图谱。
@@ -654,19 +661,45 @@ class AIService:
                 ]
             }
 
-    async def generate_exam_questions(self, topic: str, count: int, 
-                                    difficulty: str, question_types: List[str]) -> List[Dict]:
+    async def generate_exam_questions(self, exam_scope: str, num_mcq: int = 5, 
+                                   num_saq: int = 3, num_code: int = 1) -> List[Dict]:
         """生成考试题目"""
         prompt = f"""
-        请为"{topic}"生成{count}道{difficulty}难度的考试题目。
-        题目类型：{', '.join(question_types)}
+        你是一位资深的命题专家。请根据以下要求生成一份完整的试卷。
 
-        请以JSON数组格式返回，每个题目包含以下字段：
-        - question_text: 题目内容
-        - question_type: 题目类型
-        - options: 选项（如果是选择题）
-        - correct_answer: 正确答案
-        - difficulty: 难度
+        **试卷要求:**
+        - 考察范围: {exam_scope}
+        - 选择题数量: {num_mcq}
+        - 简答题数量: {num_saq}
+        - 编程题数量: {num_code}
+
+        **重要：你必须严格按照以下JSON格式返回，不要添加任何解释文字：**
+
+        {{
+          "questions": [
+            {{
+              "type": "multiple_choice",
+              "question_text": "题目内容",
+              "options": ["A. 选项1", "B. 选项2", "C. 选项3", "D. 选项4"],
+              "answer": "A",
+              "explanation": "答案解析"
+            }},
+            {{
+              "type": "short_answer",
+              "question_text": "简答题内容",
+              "answer": "参考答案",
+              "explanation": "评分要点"
+            }},
+            {{
+              "type": "coding",
+              "question_text": "编程题要求",
+              "answer": "参考代码",
+              "explanation": "评分标准"
+            }}
+          ]
+        }}
+
+        请严格按照上述JSON格式生成{num_mcq + num_saq + num_code}道题目，直接返回JSON，不要包含其他内容。
         """
 
         response = await self.call_deepseek_api(prompt)
@@ -683,10 +716,10 @@ class AIService:
             # 返回默认题目
             return [
                 {
-                    "question_text": f"请解释{topic}的基本概念。",
+                    "question_text": f"请解释{exam_scope}的基本概念。",
                     "question_type": "简答题",
-                    "correct_answer": f"{topic}的基本概念是...",
-                    "difficulty": difficulty
+                    "correct_answer": f"{exam_scope}的基本概念是...",
+                    "difficulty": "中等"
                 }
             ]
 

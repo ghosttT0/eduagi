@@ -105,13 +105,19 @@ async def create_teaching_plan(
     # 调用AI服务生成教学计划
     topic_text = plan_data.topic if plan_data.topic else f"{plan_data.course_name} - {plan_data.chapter} 整体大纲"
 
-    ai_response = await ai_service.generate_teaching_plan(
-        course_name=plan_data.course_name,
-        chapter=plan_data.chapter,
-        topic=plan_data.topic,
-        class_hours=plan_data.class_hours,
-        teaching_time=plan_data.teaching_time
-    )
+    try:
+        ai_response = await ai_service.generate_teaching_plan(
+            course_name=plan_data.course_name,
+            chapter=plan_data.chapter,
+            topic=plan_data.topic,
+            class_hours=plan_data.class_hours,
+            teaching_time=plan_data.teaching_time
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI服务调用失败: {str(e)}。请检查API密钥配置。"
+        )
     
     # 保存到数据库
     new_plan = TeachingPlan(
@@ -172,11 +178,17 @@ async def create_mindmap(
     if current_user.role != "教师":
         raise HTTPException(status_code=403, detail="权限不足")
     
-    # 调用AI服务生成思维导图
-    mindmap_json = await ai_service.generate_mindmap(
-        topic=mindmap_data.topic,
-        description=mindmap_data.description
-    )
+    try:
+        # 调用AI服务生成思维导图
+        mindmap_json = await ai_service.generate_mindmap(
+            topic=mindmap_data.topic,
+            description=mindmap_data.description
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI服务调用失败: {str(e)}。请检查API密钥配置。"
+        )
     
     new_mindmap = MindMap(
         user_id=current_user.id,
@@ -219,13 +231,19 @@ async def generate_exam(
     if current_user.role != "教师":
         raise HTTPException(status_code=403, detail="权限不足")
     
-    # 调用AI服务生成试卷
-    exam_questions = await ai_service.generate_exam_questions(
-        exam_scope=exam_data.exam_scope,
-        num_mcq=exam_data.num_mcq,
-        num_saq=exam_data.num_saq,
-        num_code=exam_data.num_code
-    )
+    try:
+        # 调用AI服务生成试卷
+        exam_questions = await ai_service.generate_exam_questions(
+            exam_scope=exam_data.exam_scope,
+            num_mcq=exam_data.num_mcq,
+            num_saq=exam_data.num_saq,
+            num_code=exam_data.num_code
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI服务调用失败: {str(e)}。请检查API密钥配置。"
+        )
     
     return {
         "message": "试卷生成成功",
@@ -350,11 +368,16 @@ async def analyze_video(
     if not video:
         raise HTTPException(status_code=404, detail="视频不存在")
 
-    # 调用AI服务分析视频
-    analysis_result = await ai_service.analyze_video(
-        video_title=video.title,
-        video_description=video.description
-    )
+    try:
+        # 调用AI服务分析视频
+        analysis_result = await ai_service.analyze_video(
+            video_path=video.path
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI服务调用失败: {str(e)}。请检查API密钥配置。"
+        )
 
     return {
         "video_id": video_id,
