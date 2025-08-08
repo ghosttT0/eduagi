@@ -226,7 +226,8 @@ def render():
                             if not json_data["standard_answer"]:
                                 json_data["standard_answer"] = f"这是关于{topic}的重要知识点。"
 
-                            # 将题目和答案都存入session_state
+                            # 将题目和答案都存入session_state，并保存知识点
+                            json_data['topic'] = topic  # 保存知识点信息
                             st.session_state.practice_question = json_data
                             st.session_state.practice_feedback = None  # 清空上一题的反馈
                             st.success("✅ 练习题生成成功！")
@@ -243,6 +244,7 @@ def render():
                                 "question_text": f"请详细说明{topic}的定义、特点和应用场景。",
                                 "standard_answer": f"{topic}的定义：[请根据具体内容填写]\n特点：[请列举主要特点]\n应用场景：[请说明实际应用]"
                             }
+                            default_question['topic'] = topic  # 添加知识点信息
                             st.session_state.practice_question = default_question
                             st.session_state.practice_feedback = None
                             st.warning("⚠️ AI生成异常，已创建默认练习题，您可以继续练习。")
