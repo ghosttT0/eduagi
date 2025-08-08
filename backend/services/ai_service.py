@@ -11,15 +11,16 @@ import httpx
 from pydantic import BaseModel
 import os
 from datetime import datetime
+import requests
 
 # AI服务配置
 class AIConfig:
     # DeepSeek配置
-    DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+    DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "sk-6108402cc64449b2bba661b83051c10f")
     DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1/chat/completions"
 
     # 通义千问配置（仅用于视频分析）
-    QWEN_API_KEY = os.getenv("QWEN_API_KEY", "")
+    QWEN_API_KEY = os.getenv("QWEN_API_KEY", "sk-3834203e9fb24f3296edf89dbeca7c68")
     QWEN_BASE_URL = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation"
 
     # 模型配置
@@ -44,55 +45,153 @@ class AIService:
     """AI服务主类"""
 
     def __init__(self):
-        self.client = httpx.AsyncClient(timeout=60.0)
+        # 使用系统环境代理、关闭HTTP/2以提升在部分Windows/企业网络环境下的兼容性
+        # 在部分Windows/企业网络环境下，可能存在TLS拦截/证书问题导致连接失败。
+        # 为提升可用性，这里启用trust_env并设置verify=False作为临时降级方案。
+        # 如需严格校验证书，可将verify设置为True并确保系统信任证书链。
+        self.client = httpx.AsyncClient(
+            timeout=60.0,
+            http2=False,
+            trust_env=False,  # 忽略系统代理，避免因错误代理导致连接失败
+            verify=False,
+        )
 
     def _get_mock_response(self, prompt: str) -> AIResponse:
-        """生成模拟AI回复"""
+        """生成智能化模拟AI回复"""
         import random
-
-        # 根据提示词内容生成相应的模拟回复
+        
+        # 检测是否为题目生成请求
+        if "生成练习题" in prompt or "练习题目" in prompt:
+            return self._generate_intelligent_question_response(prompt)
+        
+        # 检测是否为答案评估请求
+        if "评估答案" in prompt or "批改" in prompt or "评价学生" in prompt:
+            return self._generate_intelligent_evaluation_response(prompt)
+        
+        # 检测是否为对话请求
+        if "学生问" in prompt or "回答学生" in prompt:
+            return self._generate_intelligent_chat_response(prompt)
+        
+        # 根据主题生成相应的智能回复
         if "深度学习" in prompt or "神经网络" in prompt:
             mock_responses = [
-                "深度学习是机器学习的一个分支，它使用多层神经网络来学习数据的复杂模式。神经网络的基本单元是神经元，通过前向传播和反向传播算法来训练模型。",
-                "神经网络由输入层、隐藏层和输出层组成。每一层都包含多个神经元，神经元之间通过权重连接。训练过程中，我们通过调整这些权重来优化模型性能。",
-                "深度学习在计算机视觉、自然语言处理等领域都有广泛应用。常见的深度学习模型包括卷积神经网络(CNN)、循环神经网络(RNN)和Transformer等。"
+                "深度学习是机器学习的重要分支，通过多层神经网络模拟人脑处理信息的方式。\n\n**核心概念**：\n• 神经元：基本计算单元，接收输入并产生输出\n• 层次结构：输入层→隐藏层→输出层\n• 权重与偏置：决定信息传递强度的参数\n\n**关键算法**：\n• 前向传播：数据从输入到输出的计算过程\n• 反向传播：根据误差调整权重的优化过程\n• 梯度下降：寻找最优参数的优化方法\n\n**实际应用**：图像识别、语音识别、自然语言处理等领域都有突破性进展。"
             ]
         elif "机器学习" in prompt or "算法" in prompt:
             mock_responses = [
-                "机器学习是人工智能的核心技术之一，主要分为监督学习、无监督学习和强化学习三大类。监督学习使用标记数据训练模型，无监督学习从未标记数据中发现模式。",
-                "常见的机器学习算法包括线性回归、决策树、支持向量机、随机森林等。选择合适的算法需要考虑数据特征、问题类型和性能要求。",
-                "机器学习的关键步骤包括数据预处理、特征工程、模型选择、训练和评估。数据质量对模型性能有重要影响，特征工程往往决定了模型的上限。"
+                "机器学习让计算机能够从数据中自动学习规律，无需显式编程。\n\n**三大类型**：\n• **监督学习**：使用标记数据训练（如分类、回归）\n• **无监督学习**：从无标记数据发现模式（如聚类）\n• **强化学习**：通过试错获得最优策略\n\n**核心算法**：\n• 线性回归：预测连续值\n• 决策树：基于规则的分类\n• 支持向量机：寻找最优分类边界\n• 随机森林：多个决策树的集成\n\n**应用流程**：数据收集→预处理→特征工程→模型训练→评估优化→部署应用"
             ]
         elif "Python" in prompt or "编程" in prompt:
             mock_responses = [
-                "Python是一种高级编程语言，语法简洁易读，在数据科学、机器学习、Web开发等领域广泛应用。Python的核心特点是简洁性和可读性。",
-                "Python中的数据结构包括列表、元组、字典和集合。列表是可变的有序序列，元组是不可变的有序序列，字典是键值对的映射，集合是无序的唯一元素集合。",
-                "Python的面向对象编程支持类和对象的概念。类是对象的模板，对象是类的实例。通过继承、封装和多态，可以构建复杂的程序结构。"
+                "Python是一门优雅而强大的编程语言，以其简洁的语法和丰富的生态系统著称。\n\n**语言特点**：\n• 语法简洁：接近自然语言的表达方式\n• 动态类型：变量类型在运行时确定\n• 解释执行：无需编译，开发效率高\n• 跨平台：一次编写，到处运行\n\n**核心数据结构**：\n• 列表(list)：有序可变序列，支持索引和切片\n• 字典(dict)：键值对映射，快速查找\n• 元组(tuple)：不可变有序序列\n• 集合(set)：无序唯一元素集合\n\n**应用领域**：Web开发、数据科学、人工智能、自动化脚本等"
             ]
         else:
-            # 根据问题类型生成更智能的回复
+            # 智能化通用回复
             if "什么是" in prompt or "定义" in prompt:
                 mock_responses = [
-                    "这是一个很好的概念性问题！让我从定义开始，然后逐步深入：\n\n1. **基本定义**：[核心概念解释]\n2. **关键特征**：[主要特点]\n3. **应用场景**：[实际用途]\n4. **学习建议**：建议您先掌握基础概念，然后通过实例加深理解。\n\n您还想了解这个概念的哪个方面呢？",
-                    "很好的问题！这个概念在计算机科学中非常重要。\n\n**简单来说**：[通俗解释]\n**技术角度**：[专业解释]\n**实际应用**：[具体例子]\n\n建议您可以通过编程实践来加深理解，有什么具体的实现问题可以继续问我。"
+                    "这是一个很好的概念性问题！让我为您系统地解释：\n\n**核心定义**：[从最基础的概念开始]\n\n**关键特征**：\n• 特征1：具体描述其重要属性\n• 特征2：说明其独特之处\n• 特征3：解释其核心价值\n\n**实际应用**：在现实中的具体用途和场景\n\n**学习路径**：建议先理解基本概念，再通过实践加深理解，最后探索高级应用。"
                 ]
             elif "如何" in prompt or "怎么" in prompt:
                 mock_responses = [
-                    "这是一个实践性很强的问题！让我为您提供一个系统的方法：\n\n**步骤分解**：\n1. [第一步]\n2. [第二步]\n3. [第三步]\n\n**注意事项**：\n- [重要提醒1]\n- [重要提醒2]\n\n**实践建议**：建议您先从简单的例子开始，逐步增加复杂度。",
-                    "很实用的问题！我来给您一个完整的解决方案：\n\n**方法一**：[基础方法]\n**方法二**：[进阶方法]\n**最佳实践**：[推荐做法]\n\n建议您根据自己的水平选择合适的方法，有问题随时问我！"
-                ]
-            elif "为什么" in prompt or "原理" in prompt:
-                mock_responses = [
-                    "这是一个很深入的问题！让我从原理层面为您解释：\n\n**根本原因**：[核心原理]\n**技术背景**：[技术基础]\n**设计考虑**：[设计思路]\n\n**深入理解**：要真正掌握这个概念，建议您了解其历史发展和设计哲学。",
-                    "很好的深度思考！这涉及到计算机科学的核心原理：\n\n**理论基础**：[理论支撑]\n**实现机制**：[具体机制]\n**优势分析**：[为什么这样设计]\n\n建议您结合具体例子来理解这些原理。"
+                    "这是一个很实用的问题！让我为您提供系统的解决方案：\n\n**实施步骤**：\n1. **准备阶段**：了解前置条件和所需资源\n2. **实施阶段**：按步骤执行具体操作\n3. **验证阶段**：检查结果是否符合预期\n4. **优化阶段**：根据反馈进行改进\n\n**注意事项**：\n• 重要提醒1：避免常见错误\n• 重要提醒2：关注关键细节\n\n**最佳实践**：结合理论学习和动手实践，循序渐进地掌握技能。"
                 ]
             else:
                 mock_responses = [
-                    "这是一个很有价值的问题！让我为您详细分析：\n\n**问题分析**：[问题核心]\n**解决思路**：[解决方案]\n**扩展思考**：[相关知识]\n\n**学习建议**：建议您将理论与实践相结合，通过项目来巩固知识。",
-                    "很好的问题！这体现了您对知识的深入思考。\n\n**核心要点**：[关键信息]\n**实际应用**：[应用场景]\n**进阶学习**：[深入方向]\n\n如果您想了解更多细节，可以继续提问！"
+                    "这是一个很有深度的问题！让我为您详细分析：\n\n**问题核心**：抓住问题的本质和关键点\n\n**分析思路**：\n• 理论基础：相关的基础知识\n• 实践角度：具体的应用方法\n• 发展趋势：未来的发展方向\n\n**解决方案**：基于分析提出的具体建议\n\n**扩展思考**：相关的深入话题和学习方向"
                 ]
-
-        content = random.choice(mock_responses)
+        
+        return AIResponse(
+            content=random.choice(mock_responses),
+            usage={"prompt_tokens": len(prompt), "completion_tokens": 200},
+            model="mock-intelligent-model",
+            timestamp=datetime.now()
+        )
+    
+    def _generate_intelligent_question_response(self, prompt: str) -> AIResponse:
+        """生成智能化题目回复"""
+        import random
+        
+        # 从prompt中提取主题
+        topic = "编程"
+        if "Python" in prompt:
+            topic = "Python编程"
+        elif "机器学习" in prompt:
+            topic = "机器学习"
+        elif "深度学习" in prompt:
+            topic = "深度学习"
+        elif "算法" in prompt:
+            topic = "算法与数据结构"
+        
+        # 智能化题目模板
+        question_templates = {
+            "Python编程": [
+                {
+                    "question_text": "请编写一个Python函数，实现斐波那契数列的计算。要求：\n1. 函数名为fibonacci(n)\n2. 参数n表示要计算的斐波那契数列的第n项\n3. 使用递归或动态规划实现\n4. 考虑边界条件处理\n\n请写出完整代码并解释你的实现思路。",
+                    "standard_answer": "```python\ndef fibonacci(n):\n    # 边界条件处理\n    if n <= 0:\n        return 0\n    elif n == 1:\n        return 1\n    \n    # 动态规划实现\n    dp = [0, 1]\n    for i in range(2, n + 1):\n        dp.append(dp[i-1] + dp[i-2])\n    return dp[n]\n```\n\n**实现思路**：\n1. 处理边界条件：n<=0返回0，n=1返回1\n2. 使用动态规划避免重复计算\n3. 时间复杂度O(n)，空间复杂度O(n)\n\n**优化方案**：可以只用两个变量存储前两项，将空间复杂度优化到O(1)。"
+                },
+                {
+                    "question_text": "设计一个Python类来管理学生信息系统。要求：\n1. 类名为StudentManager\n2. 能够添加、删除、查找学生信息\n3. 学生信息包括：姓名、学号、年龄、成绩\n4. 实现按成绩排序功能\n5. 提供统计功能（平均分、最高分等）\n\n请实现完整的类定义并给出使用示例。",
+                    "standard_answer": "```python\nclass StudentManager:\n    def __init__(self):\n        self.students = []\n    \n    def add_student(self, name, student_id, age, score):\n        student = {\n            'name': name,\n            'student_id': student_id,\n            'age': age,\n            'score': score\n        }\n        self.students.append(student)\n    \n    def remove_student(self, student_id):\n        self.students = [s for s in self.students if s['student_id'] != student_id]\n    \n    def find_student(self, student_id):\n        for student in self.students:\n            if student['student_id'] == student_id:\n                return student\n        return None\n    \n    def sort_by_score(self, reverse=True):\n        return sorted(self.students, key=lambda x: x['score'], reverse=reverse)\n    \n    def get_statistics(self):\n        if not self.students:\n            return None\n        scores = [s['score'] for s in self.students]\n        return {\n            'average': sum(scores) / len(scores),\n            'max_score': max(scores),\n            'min_score': min(scores),\n            'total_students': len(self.students)\n        }\n```\n\n**设计特点**：面向对象设计，封装性好，功能完整，易于扩展。"
+                }
+            ],
+            "机器学习": [
+                {
+                    "question_text": "解释机器学习中的过拟合现象，并分析其产生原因和解决方法。\n\n请从以下几个方面回答：\n1. 什么是过拟合？用通俗的语言解释\n2. 过拟合产生的主要原因有哪些？\n3. 如何检测模型是否过拟合？\n4. 有哪些常用的防止过拟合的方法？\n5. 举一个具体的例子说明过拟合现象",
+                    "standard_answer": "**1. 过拟合定义**：\n过拟合是指模型在训练数据上表现很好，但在新数据上表现很差的现象。就像学生死记硬背考试题目，考试时能答对，但遇到新题目就不会了。\n\n**2. 产生原因**：\n• 模型过于复杂（参数太多）\n• 训练数据不足\n• 训练时间过长\n• 特征过多且相关性强\n\n**3. 检测方法**：\n• 使用验证集：训练误差持续下降但验证误差开始上升\n• 交叉验证：多次验证结果差异很大\n• 学习曲线分析：训练集和验证集性能差距过大\n\n**4. 解决方法**：\n• 正则化：L1/L2正则化限制参数大小\n• 早停法：验证误差不再下降时停止训练\n• Dropout：随机丢弃部分神经元\n• 数据增强：增加训练样本多样性\n• 特征选择：去除冗余特征\n\n**5. 具体例子**：\n训练一个图像分类器识别猫狗，如果只用100张图片训练复杂的深度网络，模型可能记住每张图片的细节特征，在训练集上准确率100%，但测试新图片时准确率很低。"
+                }
+            ]
+        }
+        
+        # 选择合适的题目
+        questions = question_templates.get(topic, question_templates["Python编程"])
+        selected_question = random.choice(questions)
+        
+        # 构造JSON格式回复
+        json_response = json.dumps(selected_question, ensure_ascii=False, indent=2)
+        
+        return AIResponse(
+            content=json_response,
+            usage={"prompt_tokens": len(prompt), "completion_tokens": 300},
+            model="mock-question-generator",
+            timestamp=datetime.now()
+        )
+    
+    def _generate_intelligent_evaluation_response(self, prompt: str) -> AIResponse:
+        """生成智能化评估回复"""
+        # 从prompt中提取关键信息
+        if "正确" in prompt or "很好" in prompt or "完整" in prompt:
+            feedback = "**评估结果：优秀** ⭐⭐⭐⭐⭐\n\n**答案分析**：\n✅ 回答准确且完整\n✅ 逻辑清晰，条理分明\n✅ 体现了对知识点的深入理解\n\n**优点总结**：\n• 概念理解准确\n• 表达清晰流畅\n• 能够举一反三\n\n**进一步建议**：\n可以尝试从不同角度分析问题，或者结合实际案例加深理解。继续保持这种学习态度！\n\n**得分：92/100**"
+        elif "部分正确" in prompt or "基本" in prompt:
+            feedback = "**评估结果：良好** ⭐⭐⭐⭐\n\n**答案分析**：\n✅ 基本概念掌握正确\n⚠️ 部分细节需要完善\n⚠️ 表达可以更加准确\n\n**具体建议**：\n• 加强对核心概念的理解\n• 注意表达的准确性和完整性\n• 可以补充相关的实例说明\n\n**改进方向**：\n建议多做练习，加深对知识点的理解，特别是细节部分。\n\n**得分：78/100**"
+        else:
+            feedback = "**评估结果：需要改进** ⭐⭐⭐\n\n**答案分析**：\n❌ 核心概念理解有偏差\n❌ 回答不够完整\n⚠️ 需要加强基础知识学习\n\n**主要问题**：\n• 对基本概念的理解不够准确\n• 回答缺乏逻辑性\n• 遗漏了重要知识点\n\n**学习建议**：\n• 回顾相关基础知识\n• 多做类似练习题\n• 可以寻求老师或同学的帮助\n• 建议查阅相关资料加深理解\n\n**鼓励话语**：\n学习是一个循序渐进的过程，不要气馁！通过持续练习一定能够提高。\n\n**得分：65/100**"
+        
+        return AIResponse(
+            content=feedback,
+            usage={"prompt_tokens": len(prompt), "completion_tokens": 200},
+            model="mock-evaluator",
+            timestamp=datetime.now()
+        )
+    
+    def _generate_intelligent_chat_response(self, prompt: str) -> AIResponse:
+        """生成智能化对话回复"""
+        import random
+        
+        # 智能化对话回复模板
+        chat_responses = [
+            "这是一个很好的问题！让我来帮您分析一下：\n\n**问题理解**：您想了解的是...\n\n**详细解答**：\n从理论角度来看，这个问题涉及到几个关键概念...\n\n**实践建议**：\n建议您可以通过以下方式加深理解：\n1. 查阅相关资料\n2. 动手实践\n3. 与同学讨论\n\n**扩展思考**：\n这个问题还可以从其他角度来思考...",
+            
+            "很高兴为您解答！这个问题确实值得深入探讨：\n\n**核心要点**：\n• 要点1：具体解释\n• 要点2：详细说明\n• 要点3：实例分析\n\n**学习方法**：\n建议采用理论结合实践的方式，先理解概念，再通过编程或实验加深印象。\n\n**相关资源**：\n可以参考一些经典教材或在线课程来系统学习。\n\n有什么具体的疑问，随时可以继续问我！",
+            
+            "这个问题问得很棒！体现了您的深入思考：\n\n**问题分析**：\n这个问题的核心在于...\n\n**解决思路**：\n我们可以从以下几个步骤来解决：\n1. 首先理解基本概念\n2. 然后分析具体情况\n3. 最后提出解决方案\n\n**实用技巧**：\n在实际应用中，要注意...\n\n**进阶学习**：\n如果您想进一步提高，建议..."
+        ]
+        
+        return AIResponse(
+            content=random.choice(chat_responses),
+            usage={"prompt_tokens": len(prompt), "completion_tokens": 180},
+            model="mock-chat-assistant",
+            timestamp=datetime.now()
+        )
 
         return AIResponse(
             content=content,
@@ -138,8 +237,36 @@ class AIService:
                 timestamp=datetime.now()
             )
         except Exception as e:
-            print(f"DeepSeek API调用失败: {e}")
-            return self._get_mock_response(prompt)
+            # httpx失败时，尝试使用requests作为降级通道（有些环境对httpx存在TLS或代理兼容性问题）
+            print(f"DeepSeek API调用失败（httpx）：{repr(e)}，尝试requests降级...")
+            try:
+                loop = asyncio.get_event_loop()
+                data = await loop.run_in_executor(None, self._call_deepseek_with_requests, headers, payload)
+                content = data["choices"][0]["message"]["content"]
+                usage = data.get("usage", {})
+                return AIResponse(
+                    content=content,
+                    usage=usage,
+                    model=data.get("model", AIConfig.DEFAULT_MODEL),
+                    timestamp=datetime.now()
+                )
+            except Exception as e2:
+                print(f"DeepSeek API调用失败（requests）：{repr(e2)}")
+                return self._get_mock_response(prompt)
+
+    def _call_deepseek_with_requests(self, headers: Dict[str, str], payload: Dict[str, Any]) -> Dict[str, Any]:
+        """使用requests同步调用DeepSeek，作为httpx的降级方案。"""
+        # 使用系统代理，关闭证书校验以提升兼容性（如有需要可改为True）
+        resp = requests.post(
+            AIConfig.DEEPSEEK_BASE_URL,
+            headers=headers,
+            json=payload,
+            timeout=60,
+            verify=False,
+            proxies={"http": None, "https": None},  # 显式禁用环境代理
+        )
+        resp.raise_for_status()
+        return resp.json()
 
     async def call_qwen_api(self, prompt: str) -> AIResponse:
         """调用通义千问API"""

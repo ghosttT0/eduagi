@@ -4,12 +4,14 @@ from datetime import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# 加载.env环境变量
+# 加载.env环境变量（优先后端配置）
 load_dotenv()
 
 # 通义API配置
-TONGYI_API_ENDPOINT = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-TONGYI_API_KEY = os.getenv("TONGYI_API_KEY")
+TONGYI_API_ENDPOINT = os.getenv(
+    "TONGYI_API_ENDPOINT", "https://dashscope.aliyuncs.com/compatible-mode/v1"
+)
+TONGYI_API_KEY = os.getenv("TONGYI_API_KEY", "").strip()
 
 
 def analyze_video_with_tongyi_stream(video_url: str):
@@ -41,10 +43,7 @@ def analyze_video_with_tongyi_stream(video_url: str):
             return
 
         # 初始化OpenAI客户端
-        client = OpenAI(
-            api_key=TONGYI_API_KEY,
-            base_url=TONGYI_API_ENDPOINT
-        )
+        client = OpenAI(api_key=TONGYI_API_KEY, base_url=TONGYI_API_ENDPOINT)
 
         # 调用流式API
         stream = client.chat.completions.create(
@@ -69,7 +68,7 @@ def analyze_video_with_tongyi_stream(video_url: str):
         # 流式返回内容
         full_content = ""
         for chunk in stream:
-            if chunk.choices[0].delta.content is not None:
+            if chunk.choices and chunk.choices[0].delta.content is not None:
                 content = chunk.choices[0].delta.content
                 full_content += content
                 yield full_content
@@ -181,7 +180,12 @@ def analyze_video_with_tongyi(video_url: str) -> str:
         )
 
         # 检查响应
-        if hasattr(response.choices[0].message, 'content') and response.choices[0].message.content:
+        if (
+            hasattr(response, "choices")
+            and response.choices
+            and hasattr(response.choices[0].message, "content")
+            and response.choices[0].message.content
+        ):
             result = response.choices[0].message.content.strip()
             print("✅ 视频分析成功完成")
             return result
@@ -265,7 +269,7 @@ def get_video_info(video_url: str) -> dict:
 
     try:
         parsed = urlparse(video_url)
-        response = requests.head(video_url, timeout=10)
+        response = requests.head(video_url, timeout=10, allow_redirects=True)
 
         return {
             "url": video_url,
