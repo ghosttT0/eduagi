@@ -9,7 +9,7 @@ startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
 PYTHON_VERSION = "3.11"
 DATABASE_URL = "sqlite:///./teaching.db"
 SECRET_KEY = "your-secret-key-here"
-CORS_ORIGINS = "https://eduagi.zeabur.app,https://eduagi-fullstack.zeabur.app"
+CORS_ORIGINS = "https://eduagi.zeabur.app,https://eduagi-fullstack.zeabur.app,https://eduagi-frontend.zeabur.app,http://localhost:3000,http://localhost:5173"
 
 [build.packages]
 python = "3.11"

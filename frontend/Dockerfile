@@ -12,6 +12,10 @@ RUN npm ci
 # 复制源代码
 COPY . .
 
+# 设置环境变量
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL:-https://eduagi-backend.zeabur.app}
+
 # 构建应用
 RUN npm run build
 

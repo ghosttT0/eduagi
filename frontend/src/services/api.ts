@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/authStore'
 
 // 创建axios实例
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://eduagi-backend.zeabur.app',
   timeout: 10000,
 })
 
@@ -277,6 +277,9 @@ export const videoAPI = {
         id: Date.now(),
         title: '新视频分析',
         url: video_url,
+        duration: 0,
+        views: 0,
+        likes: 0,
         status: 'processing',
         created_at: new Date().toISOString()
       }
