@@ -1,15 +1,74 @@
-import React, { useState } from 'react'
-import { Card, Row, Col, Button, Input, Select, Modal, Form, message, Tabs, Typography, Space, Alert } from 'antd'
-import { PlusOutlined, FileTextOutlined, BulbOutlined, BookOutlined } from '@ant-design/icons'
+import React, { useState, useEffect } from 'react'
+import { Card, Button, Input, Select, Modal, Form, message, Tabs, Typography, Space, List, Spin, Empty, Alert } from 'antd'
+import { PlusOutlined, FileTextOutlined, BulbOutlined, BookOutlined, EyeOutlined } from '@ant-design/icons'
+import { teacherAPI } from '../../services/api'
 
-const { Title, Text, Paragraph } = Typography
+const { Title, Paragraph } = Typography
 const { TextArea } = Input
 const { TabPane } = Tabs
+
+interface TeachingPlan {
+  id: number
+  teacher_id: number
+  input_prompt: string
+  output_content: string
+  created_at: string
+}
+
+interface MindMap {
+  id: number
+  user_id: number
+  title: string
+  topic: string
+  data: string
+  description?: string
+  is_public: boolean
+  created_at: string
+}
 
 const TeacherDashboardPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [modalType, setModalType] = useState<'plan' | 'exam' | 'mindmap'>('plan')
   const [form] = Form.useForm()
+  const [creating, setCreating] = useState(false)
+  
+  // 数据状态
+  const [teachingPlans, setTeachingPlans] = useState<TeachingPlan[]>([])
+  const [mindMaps, setMindMaps] = useState<MindMap[]>([])
+  const [plansLoading, setPlansLoading] = useState(false)
+  const [mindMapsLoading, setMindMapsLoading] = useState(false)
+
+  // 加载数据
+  useEffect(() => {
+    loadTeachingPlans()
+    loadMindMaps()
+  }, [])
+
+  const loadTeachingPlans = async () => {
+    setPlansLoading(true)
+    try {
+      const response = await teacherAPI.getTeachingPlans()
+      setTeachingPlans(response.data)
+    } catch (error) {
+      console.error('加载教学计划失败:', error)
+      message.error('加载教学计划失败')
+    } finally {
+      setPlansLoading(false)
+    }
+  }
+
+  const loadMindMaps = async () => {
+    setMindMapsLoading(true)
+    try {
+      const response = await teacherAPI.getMindMaps()
+      setMindMaps(response.data)
+    } catch (error) {
+      console.error('加载思维导图失败:', error)
+      message.error('加载思维导图失败')
+    } finally {
+      setMindMapsLoading(false)
+    }
+  }
 
   const showModal = (type: 'plan' | 'exam' | 'mindmap') => {
     setModalType(type)
@@ -18,12 +77,44 @@ const TeacherDashboardPage: React.FC = () => {
   }
 
   const handleCreate = async (values: any) => {
+    setCreating(true)
     try {
-      message.success('功能开发中，敬请期待！')
+      if (modalType === 'plan') {
+        await teacherAPI.createTeachingPlan({
+          course_name: values.course_name,
+          chapter: values.chapter || values.topic,
+          topic: values.topic,
+          class_hours: values.class_hours || 2,
+          teaching_time: values.teaching_time || 90
+        })
+        message.success('教学计划生成成功！')
+        loadTeachingPlans() // 重新加载数据
+      } else if (modalType === 'exam') {
+        await teacherAPI.generateExam({
+          exam_scope: values.scope,
+          num_mcq: values.num_mcq || 5,
+          num_saq: values.num_saq || 3,
+          num_code: values.num_code || 1
+        })
+        message.success('试卷生成成功！')
+      } else if (modalType === 'mindmap') {
+        await teacherAPI.createMindMap({
+          title: values.title || values.topic,
+          topic: values.topic,
+          description: values.requirements,
+          is_public: false
+        })
+        message.success('思维导图生成成功！')
+        loadMindMaps() // 重新加载数据
+      }
+      
       setModalVisible(false)
       form.resetFields()
-    } catch (error) {
-      message.error('操作失败，请重试')
+    } catch (error: any) {
+      console.error('创建失败:', error)
+      message.error(error.response?.data?.detail || '操作失败，请重试')
+    } finally {
+      setCreating(false)
     }
   }
 
@@ -33,12 +124,29 @@ const TeacherDashboardPage: React.FC = () => {
         生成教学计划
       </Button>
     }>
-      <Alert
-        message="功能开发中"
-        description="教学计划生成功能正在开发中，将支持AI智能生成教学计划、课程大纲等功能。"
-        type="info"
-        showIcon
-      />
+      <Spin spinning={plansLoading}>
+        {teachingPlans.length === 0 ? (
+          <Empty description="暂无教学计划，点击上方按钮生成" />
+        ) : (
+          <List
+            dataSource={teachingPlans}
+            renderItem={(plan) => (
+              <List.Item
+                actions={[
+                  <Button key="view" type="link" icon={<EyeOutlined />}>
+                    查看详情
+                  </Button>
+                ]}
+              >
+                <List.Item.Meta
+                  title={plan.input_prompt}
+                  description={`创建时间: ${new Date(plan.created_at).toLocaleString()}`}
+                />
+              </List.Item>
+            )}
+          />
+        )}
+      </Spin>
     </Card>
   )
 
@@ -63,12 +171,29 @@ const TeacherDashboardPage: React.FC = () => {
         生成思维导图
       </Button>
     }>
-      <Alert
-        message="功能开发中"
-        description="思维导图生成功能正在开发中，将支持AI智能生成知识结构图、概念关系图等。"
-        type="info"
-        showIcon
-      />
+      <Spin spinning={mindMapsLoading}>
+        {mindMaps.length === 0 ? (
+          <Empty description="暂无思维导图，点击上方按钮生成" />
+        ) : (
+          <List
+            dataSource={mindMaps}
+            renderItem={(mindMap) => (
+              <List.Item
+                actions={[
+                  <Button key="view" type="link" icon={<EyeOutlined />}>
+                    查看详情
+                  </Button>
+                ]}
+              >
+                <List.Item.Meta
+                  title={mindMap.title}
+                  description={`主题: ${mindMap.topic} | 创建时间: ${new Date(mindMap.created_at).toLocaleString()}`}
+                />
+              </List.Item>
+            )}
+          />
+        )}
+      </Spin>
     </Card>
   )
 
@@ -87,14 +212,29 @@ const TeacherDashboardPage: React.FC = () => {
         case 'plan':
           return (
             <>
-              <Form.Item name="topic" label="教学主题" rules={[{ required: true }]}>
-                <Input placeholder="请输入教学主题" />
-              </Form.Item>
               <Form.Item name="course_name" label="课程名称" rules={[{ required: true }]}>
                 <Input placeholder="请输入课程名称" />
               </Form.Item>
-              <Form.Item name="requirements" label="特殊要求">
-                <TextArea rows={4} placeholder="请输入特殊要求（可选）" />
+              <Form.Item name="chapter" label="章节名称" rules={[{ required: true }]}>
+                <Input placeholder="请输入章节名称" />
+              </Form.Item>
+              <Form.Item name="topic" label="教学主题">
+                <Input placeholder="请输入教学主题（可选）" />
+              </Form.Item>
+              <Form.Item name="class_hours" label="课时数">
+                <Select defaultValue={2}>
+                  <Select.Option value={1}>1课时</Select.Option>
+                  <Select.Option value={2}>2课时</Select.Option>
+                  <Select.Option value={3}>3课时</Select.Option>
+                  <Select.Option value={4}>4课时</Select.Option>
+                </Select>
+              </Form.Item>
+              <Form.Item name="teaching_time" label="教学时间（分钟）">
+                <Select defaultValue={90}>
+                  <Select.Option value={45}>45分钟</Select.Option>
+                  <Select.Option value={90}>90分钟</Select.Option>
+                  <Select.Option value={120}>120分钟</Select.Option>
+                </Select>
               </Form.Item>
             </>
           )
@@ -138,11 +278,14 @@ const TeacherDashboardPage: React.FC = () => {
         case 'mindmap':
           return (
             <>
-              <Form.Item name="topic" label="思维导图主题" rules={[{ required: true }]}>
-                <Input placeholder="请输入思维导图主题" />
+              <Form.Item name="title" label="思维导图标题" rules={[{ required: true }]}>
+                <Input placeholder="请输入思维导图标题" />
               </Form.Item>
-              <Form.Item name="requirements" label="特殊要求">
-                <TextArea rows={4} placeholder="请输入特殊要求（可选）" />
+              <Form.Item name="topic" label="主题内容" rules={[{ required: true }]}>
+                <Input placeholder="请输入主题内容" />
+              </Form.Item>
+              <Form.Item name="description" label="描述信息">
+                <TextArea rows={4} placeholder="请输入描述信息（可选）" />
               </Form.Item>
             </>
           )
@@ -163,10 +306,10 @@ const TeacherDashboardPage: React.FC = () => {
           {getFormItems()}
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" loading={creating}>
                 开始生成
               </Button>
-              <Button onClick={() => setModalVisible(false)}>
+              <Button onClick={() => setModalVisible(false)} disabled={creating}>
                 取消
               </Button>
             </Space>

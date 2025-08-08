@@ -15,9 +15,9 @@ export default defineConfig({
     // 添加代理配置解决CORS问题
     proxy: {
       '/api': {
-        target: 'https://eduagi-fullstack.zeabur.app',
+        target: 'http://localhost:8000',
         changeOrigin: true,
-        secure: true,
+        secure: false,
         rewrite: (path) => path.replace(/^\/api/, '/api'),
       },
     },
