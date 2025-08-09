@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Card, Button, Input, Select, Modal, Form, message, Tabs, Typography, Space, List, Spin, Empty, Alert } from 'antd'
-import { PlusOutlined, FileTextOutlined, BulbOutlined, BookOutlined, EyeOutlined } from '@ant-design/icons'
+import { PlusOutlined, FileTextOutlined, BulbOutlined, BookOutlined, EyeOutlined, DownloadOutlined, ApiOutlined } from '@ant-design/icons'
 import { teacherAPI } from '../../services/api'
 
 const { Title, Paragraph } = Typography
@@ -37,6 +37,7 @@ const TeacherDashboardPage: React.FC = () => {
   const [mindMaps, setMindMaps] = useState<MindMap[]>([])
   const [plansLoading, setPlansLoading] = useState(false)
   const [mindMapsLoading, setMindMapsLoading] = useState(false)
+  const [testingAI, setTestingAI] = useState(false)
 
   // 加载数据
   useEffect(() => {
@@ -120,9 +121,33 @@ const TeacherDashboardPage: React.FC = () => {
 
   const renderTeachingPlans = () => (
     <Card title="教学计划" extra={
-      <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('plan')}>
-        生成教学计划
-      </Button>
+      <Space>
+        <Button icon={<ApiOutlined />} loading={testingAI} onClick={async () => {
+          try {
+            setTestingAI(true)
+            const res = await teacherAPI.aiDiagnostics()
+            const data = res.data
+            if (data.ok) {
+              if (data.using_mock) {
+                message.warning(`AI连接已降级为模拟模式（model=${data.model}）`)
+              } else {
+                message.success(`AI连接正常（model=${data.model}）`)
+              }
+            } else {
+              message.error('AI诊断失败：' + (data.error || '未知错误'))
+            }
+          } catch (e: any) {
+            message.error('AI诊断请求失败')
+          } finally {
+            setTestingAI(false)
+          }
+        }}>
+          测试AI连接
+        </Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal('plan')}>
+          生成教学计划
+        </Button>
+      </Space>
     }>
       <Spin spinning={plansLoading}>
         {teachingPlans.length === 0 ? (
@@ -135,6 +160,24 @@ const TeacherDashboardPage: React.FC = () => {
                 actions={[
                   <Button key="view" type="link" icon={<EyeOutlined />}>
                     查看详情
+                  </Button>,
+                  <Button key="export" type="link" icon={<DownloadOutlined />} onClick={async () => {
+                    try {
+                      const res = await teacherAPI.exportTeachingPlan(plan.id)
+                      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
+                      const url = window.URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `教案_${plan.id}.docx`
+                      document.body.appendChild(a)
+                      a.click()
+                      a.remove()
+                      window.URL.revokeObjectURL(url)
+                    } catch (e: any) {
+                      message.error('导出失败，请重试')
+                    }
+                  }}>
+                    导出教案
                   </Button>
                 ]}
               >
