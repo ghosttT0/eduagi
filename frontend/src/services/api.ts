@@ -51,6 +51,11 @@ export const teacherAPI = {
   createTeachingPlan: (data: any) => api.post('/teacher/teaching-plans', data),
   getTeachingPlans: () => api.get('/teacher/teaching-plans'),
   getTeachingPlan: (id: number) => api.get(`/teacher/teaching-plans/${id}`),
+  exportTeachingPlan: (id: number) =>
+    api.get(`/teacher/teaching-plans/${id}/export`, { responseType: 'blob' }),
+
+  // AI诊断
+  aiDiagnostics: () => api.get('/teacher/ai-diagnostics'),
 
   // AI知识图谱
   createMindMap: (data: any) => api.post('/teacher/mindmaps', data),
